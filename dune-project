@@ -19,7 +19,16 @@
  (name ocaml_htmx)
  (synopsis "OCaml & HTMX")
  (description "A simple project to play with OCaml and HTMX")
- (depends (ocaml (and (>= "4.06") (< "5.3"))) dune)
+ (depends
+  (ocaml
+   (and
+    (>= "4.06")
+    (< "5.3")))
+  dune
+  (dream
+   (>= "1.0.0~alpha7"))
+  (tyxml
+   (>= "4.6.0")))
  (tags
   (topics "to describe" your project)))
 
