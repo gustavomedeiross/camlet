@@ -23,7 +23,10 @@ let home payments =
   html_template [ div [ h1 [ txt "Payments" ]; ul list ] ]
 ;;
 
-let payment_detail payment_id =
+let payment_detail (payment_id, created_at) =
   let open Tyxml.Html in
-  html_template [ div [ txt (Format.sprintf "Hello to %s!" payment_id) ] ]
+  html_template
+    [ div [ txt (Format.sprintf "Hello to %s!" payment_id) ]
+    ; div [ txt (Format.sprintf "created_at is %s" created_at) ]
+    ]
 ;;
