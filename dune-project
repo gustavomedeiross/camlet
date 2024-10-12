@@ -24,6 +24,7 @@
    (and
     (>= "4.06")
     (< "5.3")))
+  caqti-driver-sqlite3
   dune
   (dream
    (>= "1.0"))

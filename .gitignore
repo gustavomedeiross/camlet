@@ -5,6 +5,9 @@
 .direnv
 .envrc
 
+# sqlite
+db.sqlite
+
 ### OCaml ###
 *.annot
 *.cmo

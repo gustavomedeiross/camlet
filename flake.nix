@@ -47,7 +47,7 @@
         devShells.default = pkgs.mkShell {
           inputsFrom = [ main ];
           buildInputs = devPackages ++ [
-            # You can add packages from nixpkgs here
+            pkgs.sqlite
           ];
         };
       });
