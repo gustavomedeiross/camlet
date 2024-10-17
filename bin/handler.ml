@@ -1,22 +1,15 @@
 module type DB = Caqti_lwt.CONNECTION
 
+module Payment = Storage.Payment
+
 let home request =
-  let%lwt payments =
-    Dream.sql request
-    @@ fun (module Db : DB) ->
-    let%lwt payments_or_error = Db.collect_list Sql.select_payments () in
-    Caqti_lwt.or_fail payments_or_error
-  in
+  let account_id = Dream.param request "account_id" in
+  let%lwt payments = Storage.get_exn @@ Dream.sql request (Payment.list ~account_id) in
   View.home payments
 ;;
 
 let payment_details request =
   let payment_id = Dream.param request "payment_id" in
-  let%lwt payment =
-    Dream.sql request
-    @@ fun (module Db) ->
-    let%lwt payment_or_error = Db.find Sql.select_payment payment_id in
-    Caqti_lwt.or_fail payment_or_error
-  in
+  let%lwt payment = Storage.get_exn @@ Dream.sql request @@ Payment.show ~payment_id in
   View.payment_detail payment
 ;;

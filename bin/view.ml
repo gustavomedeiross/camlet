@@ -9,26 +9,27 @@ let html_template body_html =
 ;;
 
 let home payments =
+  let open Storage.Payment in
   let open Tyxml.Html in
   let list =
     payments
     |> List.map
-       @@ fun (payment_id, created_at) ->
+       @@ fun { id; timestamp; _ } ->
        li
          [ a
-             ~a:[ a_href (Format.sprintf "/payments/%s" payment_id) ]
-             [ txt (Format.sprintf "Payment ID: %s, created_at: %s" payment_id created_at)
-             ]
+             ~a:[ a_href (Format.sprintf "/payments/%s" id) ]
+             [ txt (Format.sprintf "Payment ID: %s, created_at: %s" id timestamp) ]
          ]
   in
   to_dream_html @@ html_template [ div [ h1 [ txt "Payments" ]; ul list ] ]
 ;;
 
-let payment_detail (payment_id, created_at) =
+let payment_detail payment =
+  let open Storage.Payment in
   let open Tyxml.Html in
   html_template
-    [ div [ txt (Format.sprintf "Hello to %s!" payment_id) ]
-    ; div [ txt (Format.sprintf "created_at is %s" created_at) ]
+    [ div [ txt (Format.sprintf "Hello to %s!" payment.id) ]
+    ; div [ txt (Format.sprintf "created_at is %s" payment.timestamp) ]
     ]
   |> to_dream_html
 ;;

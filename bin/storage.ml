@@ -2,7 +2,13 @@ module type DB = Rapper_helper.CONNECTION
 
 type err = { db_err : Caqti_error.t }
 
+exception Storage_exception of err
+
 let err_of_db_err db_err = { db_err }
+
+let get_exn result =
+  Lwt_result.get_exn @@ Lwt_result.map_error (fun err -> Storage_exception err) result
+;;
 
 module Account : sig
   (* TODO: use better types *)
@@ -30,8 +36,8 @@ module Payment : sig
     ; timestamp : string
     }
 
-  val list : (module DB) -> account_id:string -> (t list, err) Lwt_result.t
-  val show : (module DB) -> payment_id:string -> (t, err) Lwt_result.t
+  val list : account_id:string -> (module DB) -> (t list, err) Lwt_result.t
+  val show : payment_id:string -> (module DB) -> (t, err) Lwt_result.t
 end = struct
   type t =
     { id : string
@@ -45,7 +51,7 @@ end = struct
     { id; amount; sender_account_id; recipient_account_id; timestamp }
   ;;
 
-  let list db_conn ~account_id =
+  let list ~account_id db_conn =
     let query =
       [%rapper
         get_many
@@ -60,7 +66,7 @@ end = struct
     |> Lwt_result.map_error err_of_db_err
   ;;
 
-  let show db_conn ~payment_id =
+  let show ~payment_id db_conn =
     let query =
       [%rapper
         get_one
