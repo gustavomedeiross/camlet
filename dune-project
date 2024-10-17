@@ -28,6 +28,8 @@
   dune
   (dream
    (>= "1.0"))
+  ppx_rapper
+  ppx_rapper_lwt
   (tyxml
    (>= "4.6.0")))
  (tags

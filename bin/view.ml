@@ -1,3 +1,7 @@
+let to_dream_html page_html =
+  Dream.html (Format.asprintf "%a" (Tyxml.Html.pp ()) page_html)
+;;
+
 let html_template body_html =
   let open Tyxml.Html in
   let page_title = title (txt "Payments") in
@@ -17,7 +21,7 @@ let home payments =
              ]
          ]
   in
-  html_template [ div [ h1 [ txt "Payments" ]; ul list ] ]
+  to_dream_html @@ html_template [ div [ h1 [ txt "Payments" ]; ul list ] ]
 ;;
 
 let payment_detail (payment_id, created_at) =
@@ -26,4 +30,5 @@ let payment_detail (payment_id, created_at) =
     [ div [ txt (Format.sprintf "Hello to %s!" payment_id) ]
     ; div [ txt (Format.sprintf "created_at is %s" created_at) ]
     ]
+  |> to_dream_html
 ;;

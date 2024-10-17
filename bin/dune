@@ -1,6 +1,12 @@
 (executable
  (public_name ocaml_htmx)
  (name main)
- (libraries ocaml_htmx dream tyxml caqti-driver-sqlite3)
+ (libraries
+  ocaml_htmx
+  dream
+  tyxml
+  caqti-driver-sqlite3
+  ppx_rapper
+  ppx_rapper_lwt)
  (preprocess
-  (pps lwt_ppx)))
+  (pps lwt_ppx ppx_rapper)))

@@ -11,8 +11,11 @@ doc: "https://url/to/documentation"
 bug-reports: "https://github.com/gustavomedeiross/ocaml-htmx/issues"
 depends: [
   "ocaml" {>= "4.06" & < "5.3"}
+  "caqti-driver-sqlite3"
   "dune" {>= "3.7"}
   "dream" {>= "1.0"}
+  "ppx_rapper"
+  "ppx_rapper_lwt"
   "tyxml" {>= "4.6.0"}
   "odoc" {with-doc}
 ]
