@@ -2,12 +2,11 @@ module type DB = Rapper_helper.CONNECTION
 
 type err = { db_err : Caqti_error.t }
 
-exception Storage_exception of err
-
 let err_of_db_err db_err = { db_err }
 
 let get_exn result =
-  Lwt_result.get_exn @@ Lwt_result.map_error (fun err -> Storage_exception err) result
+  Lwt_result.get_exn
+  @@ Lwt_result.map_error (fun err -> Caqti_error.Exn err.db_err) result
 ;;
 
 module Account : sig
@@ -58,7 +57,7 @@ end = struct
           {sql|
            SELECT @string{id}, @int{amount}, @string{sender_account_id}, @string{recipient_account_id}, @string{timestamp}
            FROM payments
-           WHERE account_id = %string{account_id}
+           WHERE sender_account_id = %string{account_id} OR recipient_account_id = %string{account_id}
            |sql}]
     in
     query ~account_id db_conn
