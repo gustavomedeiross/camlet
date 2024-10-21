@@ -7,7 +7,7 @@
 (source
  (github gustavomedeiross/ocaml-htmx))
 
-(authors "Author Name")
+(authors "Gustavo Medeiros")
 
 (maintainers "Gustavo Medeiros")
 

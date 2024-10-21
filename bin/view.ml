@@ -1,23 +1,46 @@
-let to_dream_html page_html =
-  Dream.html (Format.asprintf "%a" (Tyxml.Html.pp ()) page_html)
-;;
+let html_to_string page_html = Format.asprintf "%a" (Tyxml.Html.pp ()) page_html
 
 let html_template body_html =
   let open Tyxml.Html in
   let page_title = title (txt "Payments") in
-  html (head page_title []) (body body_html)
+  html
+    (head
+       page_title
+       [ script
+           ~a:
+             [ a_src "https://unpkg.com/htmx.org@2.0.3"
+             ; a_integrity
+                 "sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq"
+             ; a_crossorigin `Anonymous
+             ]
+           (txt "")
+       ])
+    (body body_html)
+;;
+
+let payment_row payment =
+  let open Storage.Payment in
+  Tyxml.Html.(
+    li [ a ~a:[ a_href (Format.sprintf "/payments/%s" payment.id) ] [ txt payment.id ] ])
+;;
+
+let send_payment_form =
+  let open Tyxml.Html in
+  form
+    ~a:[ Unsafe.string_attrib "hx-post" "/pay" ]
+    [ input ~a:[ a_input_type `Text; a_name "account_id" ] ()
+    ; br ()
+    ; button ~a:[ a_button_type `Submit ] [ txt "My button" ]
+    ]
 ;;
 
 let home payments =
-  let open Storage.Payment in
   let open Tyxml.Html in
-  let list =
-    payments
-    |> List.map
-       @@ fun { id; _ } ->
-       li [ a ~a:[ a_href (Format.sprintf "/payments/%s" id) ] [ txt id ] ]
-  in
-  to_dream_html @@ html_template [ div [ h1 [ txt "Payments" ]; ul list ] ]
+  html_to_string
+  @@ html_template
+       [ div [ h1 [ txt "Send Payment" ]; send_payment_form ]
+       ; div [ h1 [ txt "Payments" ]; ul (List.map payment_row payments) ]
+       ]
 ;;
 
 let payment_detail payment =
@@ -43,5 +66,5 @@ let payment_detail payment =
         ; li [ txt (Format.sprintf "Timestamp: %s" payment.timestamp) ]
         ]
     ]
-  |> to_dream_html
+  |> html_to_string
 ;;
