@@ -6,7 +6,7 @@ let () =
   @@ Dream.sql_pool "sqlite3:db.sqlite"
   @@ Dream.logger
   @@ Dream.router
-       [ Dream.get "/:account_id" Handler.home
+       [ Dream.get "accounts/:account_id" Handler.home
        ; Dream.get "/payments/:payment_id" Handler.payment_details
        ]
 ;;

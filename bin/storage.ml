@@ -35,8 +35,8 @@ module Payment : sig
     ; timestamp : string
     }
 
-  val list : account_id:string -> (module DB) -> (t list, err) Lwt_result.t
-  val show : payment_id:string -> (module DB) -> (t, err) Lwt_result.t
+  val get_all : account_id:string -> (module DB) -> (t list, err) Lwt_result.t
+  val get_by_id : payment_id:string -> (module DB) -> (t, err) Lwt_result.t
 end = struct
   type t =
     { id : string
@@ -50,7 +50,7 @@ end = struct
     { id; amount; sender_account_id; recipient_account_id; timestamp }
   ;;
 
-  let list ~account_id db_conn =
+  let get_all ~account_id db_conn =
     let query =
       [%rapper
         get_many
@@ -65,14 +65,14 @@ end = struct
     |> Lwt_result.map_error err_of_db_err
   ;;
 
-  let show ~payment_id db_conn =
+  let get_by_id ~payment_id db_conn =
     let query =
       [%rapper
         get_one
           {sql|
            SELECT @string{id}, @int{amount}, @string{sender_account_id}, @string{recipient_account_id}, @string{timestamp}
            FROM payments
-           WHERE payment_id = %string{payment_id}
+           WHERE id = %string{payment_id}
            |sql}]
     in
     query ~payment_id db_conn
