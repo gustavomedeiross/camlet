@@ -31,7 +31,8 @@
   ppx_rapper
   ppx_rapper_lwt
   (tyxml
-   (>= "4.6.0")))
+   (>= "4.6.0"))
+  uuidm)
  (tags
   (topics "to describe" your project)))
 

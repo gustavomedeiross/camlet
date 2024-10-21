@@ -24,21 +24,25 @@ let payment_row payment =
     li [ a ~a:[ a_href (Format.sprintf "/payments/%s" payment.id) ] [ txt payment.id ] ])
 ;;
 
-let send_payment_form =
+let send_payment_form account_id =
   let open Tyxml.Html in
   form
     ~a:[ Unsafe.string_attrib "hx-post" "/pay" ]
-    [ input ~a:[ a_input_type `Text; a_name "account_id" ] ()
+    [ input ~a:[ a_input_type `Text; a_name "recipient_account_id" ] ()
+    ; br ()
+    ; input ~a:[ a_input_type `Number; a_name "amount" ] ()
+    ; br ()
+    ; input ~a:[ a_input_type `Hidden; a_name "sender_account_id"; a_value account_id ] ()
     ; br ()
     ; button ~a:[ a_button_type `Submit ] [ txt "My button" ]
     ]
 ;;
 
-let home payments =
+let home payments account_id =
   let open Tyxml.Html in
   html_to_string
   @@ html_template
-       [ div [ h1 [ txt "Send Payment" ]; send_payment_form ]
+       [ div [ h1 [ txt "Send Payment" ]; send_payment_form account_id ]
        ; div [ h1 [ txt "Payments" ]; ul (List.map payment_row payments) ]
        ]
 ;;

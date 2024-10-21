@@ -37,6 +37,7 @@ module Payment : sig
 
   val get_all : account_id:string -> (module DB) -> (t list, err) Lwt_result.t
   val get_by_id : payment_id:string -> (module DB) -> (t, err) Lwt_result.t
+  val create : t -> (module DB) -> (unit, err) Lwt_result.t
 end = struct
   type t =
     { id : string
@@ -79,4 +80,6 @@ end = struct
     |> Lwt_result.map of_tuple
     |> Lwt_result.map_error err_of_db_err
   ;;
+
+  let create _payment _db_conn = Lwt.return (Ok ())
 end
