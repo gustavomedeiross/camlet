@@ -1,4 +1,7 @@
-let html_to_string page_html = Format.asprintf "%a" (Tyxml.Html.pp ()) page_html
+let html_to_string html = Format.asprintf "%a" (Tyxml.Html.pp ()) html
+let html_elt_to_string html = Format.asprintf "%a" (Tyxml.Html.pp_elt ()) html
+let to_dream_html html = html |> html_to_string |> Dream.html
+let elt_to_dream_html html = html |> html_elt_to_string |> Dream.html
 
 let html_template body_html =
   let open Tyxml.Html in
@@ -27,24 +30,34 @@ let payment_row payment =
 let send_payment_form account_id =
   let open Tyxml.Html in
   form
-    ~a:[ Unsafe.string_attrib "hx-post" "/pay" ]
-    [ input ~a:[ a_input_type `Text; a_name "recipient_account_id" ] ()
-    ; br ()
-    ; input ~a:[ a_input_type `Number; a_name "amount" ] ()
-    ; br ()
+    ~a:
+      [ Unsafe.string_attrib "hx-post" "/pay"
+      ; Unsafe.string_attrib "hx-target" "#payment-list"
+      ]
+    [ div
+        [ label [ txt "Recipient key: " ]
+        ; input ~a:[ a_input_type `Text; a_name "recipient_account_id" ] ()
+        ]
+    ; div
+        [ label [ txt "Amount: " ]
+        ; input ~a:[ a_input_type `Number; a_name "amount" ] ()
+        ]
     ; input ~a:[ a_input_type `Hidden; a_name "sender_account_id"; a_value account_id ] ()
     ; br ()
-    ; button ~a:[ a_button_type `Submit ] [ txt "My button" ]
+    ; button ~a:[ a_button_type `Submit ] [ txt "Send money" ]
     ]
 ;;
 
 let home payments account_id =
   let open Tyxml.Html in
-  html_to_string
-  @@ html_template
-       [ div [ h1 [ txt "Send Payment" ]; send_payment_form account_id ]
-       ; div [ h1 [ txt "Payments" ]; ul (List.map payment_row payments) ]
-       ]
+  html_template
+    [ div [ h1 [ txt "Send Payment" ]; send_payment_form account_id ]
+    ; hr ()
+    ; div
+        [ h1 [ txt "Payments" ]
+        ; ul ~a:[ a_id "payment-list" ] (List.map payment_row payments)
+        ]
+    ]
 ;;
 
 let payment_detail payment =
@@ -70,5 +83,4 @@ let payment_detail payment =
         ; li [ txt (Format.sprintf "Timestamp: %s" payment.timestamp) ]
         ]
     ]
-  |> html_to_string
 ;;
