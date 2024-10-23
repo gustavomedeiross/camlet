@@ -1,7 +1,7 @@
 let html_to_string html = Format.asprintf "%a" (Tyxml.Html.pp ()) html
-let html_elt_to_string html = Format.asprintf "%a" (Tyxml.Html.pp_elt ()) html
+let elt_to_string html = Format.asprintf "%a" (Tyxml.Html.pp_elt ()) html
 let to_dream_html html = html |> html_to_string |> Dream.html
-let elt_to_dream_html html = html |> html_elt_to_string |> Dream.html
+let elt_to_dream_html html = html |> elt_to_string |> Dream.html
 
 let html_template body_html =
   let open Tyxml.Html in
@@ -27,14 +27,15 @@ let payment_row payment =
     li [ a ~a:[ a_href (Format.sprintf "/payments/%s" payment.id) ] [ txt payment.id ] ])
 ;;
 
-let send_payment_form account_id =
+let send_payment_form request account_id =
   let open Tyxml.Html in
   form
     ~a:
       [ Unsafe.string_attrib "hx-post" "/pay"
       ; Unsafe.string_attrib "hx-target" "#payment-list"
       ]
-    [ div
+    [ Unsafe.data (Dream.csrf_tag request)
+    ; div
         [ label [ txt "Recipient key: " ]
         ; input ~a:[ a_input_type `Text; a_name "recipient_account_id" ] ()
         ]
@@ -48,10 +49,10 @@ let send_payment_form account_id =
     ]
 ;;
 
-let home payments account_id =
+let home payments request account_id =
   let open Tyxml.Html in
   html_template
-    [ div [ h1 [ txt "Send Payment" ]; send_payment_form account_id ]
+    [ div [ h1 [ txt "Send Payment" ]; send_payment_form request account_id ]
     ; hr ()
     ; div
         [ h1 [ txt "Payments" ]

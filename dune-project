@@ -28,8 +28,10 @@
   dune
   (dream
    (>= "1.0"))
+  ppx_deriving
   ppx_rapper
   ppx_rapper_lwt
+  ptime
   (tyxml
    (>= "4.6.0"))
   uuidm)

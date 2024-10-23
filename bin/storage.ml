@@ -47,10 +47,6 @@ end = struct
     ; timestamp : string
     }
 
-  let of_tuple (id, amount, sender_account_id, recipient_account_id, timestamp) =
-    { id; amount; sender_account_id; recipient_account_id; timestamp }
-  ;;
-
   let get_all ~account_id db_conn =
     let query =
       [%rapper
@@ -59,11 +55,10 @@ end = struct
            SELECT @string{id}, @int{amount}, @string{sender_account_id}, @string{recipient_account_id}, @string{timestamp}
            FROM payments
            WHERE sender_account_id = %string{account_id} OR recipient_account_id = %string{account_id}
-           |sql}]
+           |sql}
+          record_out]
     in
-    query ~account_id db_conn
-    |> Lwt_result.map @@ List.map of_tuple
-    |> Lwt_result.map_error err_of_db_err
+    query ~account_id db_conn |> Lwt_result.map_error err_of_db_err
   ;;
 
   let get_by_id ~payment_id db_conn =
@@ -74,12 +69,27 @@ end = struct
            SELECT @string{id}, @int{amount}, @string{sender_account_id}, @string{recipient_account_id}, @string{timestamp}
            FROM payments
            WHERE id = %string{payment_id}
-           |sql}]
+           |sql}
+          record_out]
     in
-    query ~payment_id db_conn
-    |> Lwt_result.map of_tuple
-    |> Lwt_result.map_error err_of_db_err
+    query ~payment_id db_conn |> Lwt_result.map_error err_of_db_err
   ;;
 
-  let create _payment _db_conn = Lwt.return (Ok ())
+  let create payment db_conn =
+    let query =
+      [%rapper
+        execute
+          {sql|
+           INSERT INTO payments VALUES (
+             %string{id},
+             %int{amount},
+             %string{sender_account_id},
+             %string{recipient_account_id},
+             %string{timestamp}
+           )
+           |sql}
+          record_in]
+    in
+    query payment db_conn |> Lwt_result.map_error err_of_db_err
+  ;;
 end
