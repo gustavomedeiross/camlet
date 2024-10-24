@@ -32,7 +32,8 @@ let send_payment_form request account_id =
   form
     ~a:
       [ Unsafe.string_attrib "hx-post" "/pay"
-      ; Unsafe.string_attrib "hx-target" "#payment-list"
+      ; Unsafe.string_attrib "hx-target" "#payments"
+      ; Unsafe.string_attrib "hx-swap" "afterbegin"
       ]
     [ Unsafe.data (Dream.csrf_tag request)
     ; div
@@ -56,7 +57,7 @@ let home payments request account_id =
     ; hr ()
     ; div
         [ h1 [ txt "Payments" ]
-        ; ul ~a:[ a_id "payment-list" ] (List.map payment_row payments)
+        ; ul ~a:[ a_id "payments" ] (List.map payment_row payments)
         ]
     ]
 ;;
