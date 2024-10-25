@@ -82,7 +82,7 @@ let payment_detail payment =
                 ~a:[ a_href (Format.sprintf "/accounts/%s" payment.recipient_account_id) ]
                 [ txt payment.recipient_account_id ]
             ]
-        ; li [ txt (Format.sprintf "Timestamp: %s" payment.timestamp) ]
+        ; li [ txt (Format.sprintf "Timestamp: %s" (Ptime.to_rfc3339 payment.timestamp)) ]
         ]
     ]
 ;;

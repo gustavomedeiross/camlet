@@ -25,7 +25,7 @@ let pay request =
       ; amount
       ; recipient_account_id
       ; sender_account_id
-      ; timestamp = Ptime_clock.now () |> Ptime.to_rfc3339
+      ; timestamp = Ptime_clock.now ()
       }
     in
     let%lwt () = Storage.get_exn @@ Dream.sql request @@ Payment.create payment in

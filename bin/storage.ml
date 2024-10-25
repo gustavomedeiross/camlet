@@ -14,14 +14,14 @@ module Account : sig
   type t =
     { id : string
     ; name : string
-    ; timestamp : string
+    ; timestamp : Ptime.t
     }
 end = struct
   (* TODO: use better types *)
   type t =
     { id : string
     ; name : string
-    ; timestamp : string
+    ; timestamp : Ptime.t
     }
 end
 
@@ -32,7 +32,7 @@ module Payment : sig
     ; amount : int
     ; sender_account_id : string
     ; recipient_account_id : string
-    ; timestamp : string
+    ; timestamp : Ptime.t
     }
 
   val get_all : account_id:string -> (module DB) -> (t list, err) Lwt_result.t
@@ -44,7 +44,7 @@ end = struct
     ; amount : int
     ; sender_account_id : string
     ; recipient_account_id : string
-    ; timestamp : string
+    ; timestamp : Ptime.t
     }
 
   let get_all ~account_id db_conn =
@@ -52,7 +52,7 @@ end = struct
       [%rapper
         get_many
           {sql|
-           SELECT @string{id}, @int{amount}, @string{sender_account_id}, @string{recipient_account_id}, @string{timestamp}
+           SELECT @string{id}, @int{amount}, @string{sender_account_id}, @string{recipient_account_id}, @ptime{timestamp}
            FROM payments
            WHERE sender_account_id = %string{account_id} OR recipient_account_id = %string{account_id}
            |sql}
@@ -66,7 +66,7 @@ end = struct
       [%rapper
         get_one
           {sql|
-           SELECT @string{id}, @int{amount}, @string{sender_account_id}, @string{recipient_account_id}, @string{timestamp}
+           SELECT @string{id}, @int{amount}, @string{sender_account_id}, @string{recipient_account_id}, @ptime{timestamp}
            FROM payments
            WHERE id = %string{payment_id}
            |sql}
@@ -85,7 +85,7 @@ end = struct
              %int{amount},
              %string{sender_account_id},
              %string{recipient_account_id},
-             %string{timestamp}
+             %ptime{timestamp}
            )
            |sql}
           record_in]
