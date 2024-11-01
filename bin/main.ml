@@ -7,7 +7,8 @@ let () =
   @@ Dream.logger
   @@ Dream.memory_sessions
   @@ Dream.router
-       [ Dream.get "accounts/:account_id" Handler.home
+       [ Dream.get "accounts/:account_id" Handler.payments
+       ; Dream.get "accounts/:account_id/stream" Handler.payments_stream
        ; Dream.get "/payments/:payment_id" Handler.payment_details
        ; Dream.post "/pay" Handler.pay
        ]

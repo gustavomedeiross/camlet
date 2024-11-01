@@ -2,10 +2,22 @@ module type DB = Caqti_lwt.CONNECTION
 
 module Payment = Storage.Payment
 
-let home request =
+let payments request =
   let account_id = Dream.param request "account_id" in
   let%lwt payments = Storage.get_exn @@ Dream.sql request (Payment.get_all ~account_id) in
   View.to_dream_html @@ View.home payments request account_id
+;;
+
+let rec listen_to_new_payments stream =
+  let%lwt () = Dream.write stream "data: <li>hello</li>\n\n" in
+  let%lwt () = Dream.flush stream in
+  let%lwt () = Lwt_unix.sleep 2.0 in
+  listen_to_new_payments stream
+;;
+
+let payments_stream request =
+  let _account_id = Dream.param request "account_id" in
+  Dream.stream ~headers:[ "Content-Type", "text/event-stream" ] listen_to_new_payments
 ;;
 
 let pay request =

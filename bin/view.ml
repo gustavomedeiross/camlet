@@ -17,6 +17,7 @@ let html_template body_html =
              ; a_crossorigin `Anonymous
              ]
            (txt "")
+       ; script ~a:[ a_src "https://unpkg.com/htmx-ext-sse@2.2.2/sse.js" ] (txt "")
        ])
     (body body_html)
 ;;
@@ -50,6 +51,21 @@ let send_payment_form request account_id =
     ]
 ;;
 
+let payments_live account_id =
+  let open Tyxml.Html in
+  div
+    ~a:
+      [ Unsafe.string_attrib "hx-ext" "sse"
+      ; Unsafe.string_attrib
+          "sse-connect"
+          (Format.sprintf "/accounts/%s/stream" account_id)
+      ; Unsafe.string_attrib "sse-swap" "message"
+      ; Unsafe.string_attrib "hx-target" "#payments"
+      ; Unsafe.string_attrib "hx-swap" "afterbegin"
+      ]
+    [ txt "TESTE" ]
+;;
+
 let home payments request account_id =
   let open Tyxml.Html in
   html_template
@@ -57,6 +73,7 @@ let home payments request account_id =
     ; hr ()
     ; div
         [ h1 [ txt "Payments" ]
+        ; payments_live account_id
         ; ul ~a:[ a_id "payments" ] (List.map payment_row payments)
         ]
     ]
