@@ -12,9 +12,9 @@ let get request : t =
   | None -> raise Middleware_not_set
 ;;
 
-let middleware inner_handler request =
-  Dream.log "User_channel.middleware";
+let middleware () =
   let channel = create () in
-  let () = Dream.set_field request field channel in
-  inner_handler request
+  fun inner_handler request ->
+    let () = Dream.set_field request field channel in
+    inner_handler request
 ;;
