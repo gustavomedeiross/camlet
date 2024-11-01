@@ -28,6 +28,7 @@ let payment_row payment =
     li [ a ~a:[ a_href (Format.sprintf "/payments/%s" payment.id) ] [ txt payment.id ] ])
 ;;
 
+(* TODO: we'll need to remove this behavior from the form so it doesn't duplicate the new entry *)
 let send_payment_form request account_id =
   let open Tyxml.Html in
   form
@@ -63,7 +64,7 @@ let payments_live account_id =
       ; Unsafe.string_attrib "hx-target" "#payments"
       ; Unsafe.string_attrib "hx-swap" "afterbegin"
       ]
-    [ txt "TESTE" ]
+    [ txt "" ]
 ;;
 
 let home payments request account_id =

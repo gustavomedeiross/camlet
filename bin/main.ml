@@ -6,6 +6,7 @@ let () =
   @@ Dream.sql_pool "sqlite3:db.sqlite"
   @@ Dream.logger
   @@ Dream.memory_sessions
+  @@ User_channel.middleware
   @@ Dream.router
        [ Dream.get "accounts/:account_id" Handler.payments
        ; Dream.get "accounts/:account_id/stream" Handler.payments_stream

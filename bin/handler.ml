@@ -8,16 +8,22 @@ let payments request =
   View.to_dream_html @@ View.home payments request account_id
 ;;
 
-let rec listen_to_new_payments stream =
-  let%lwt () = Dream.write stream "data: <li>hello</li>\n\n" in
-  let%lwt () = Dream.flush stream in
-  let%lwt () = Lwt_unix.sleep 2.0 in
-  listen_to_new_payments stream
+let rec listen_to_new_payments user_channel stream =
+  match%lwt Lwt_stream.get user_channel with
+  | Some _ ->
+    (* View.elt_to_dream_html @@ View.payment_row payment *)
+    let now = Ptime_clock.now () |> Ptime.to_rfc3339 in
+    let%lwt () = Dream.write stream (Format.sprintf "data: <li>%s</li>\n\n" now) in
+    let%lwt () = Dream.flush stream in
+    listen_to_new_payments user_channel stream
+  | None -> Lwt.return ()
 ;;
 
 let payments_stream request =
   let _account_id = Dream.param request "account_id" in
-  Dream.stream ~headers:[ "Content-Type", "text/event-stream" ] listen_to_new_payments
+  let rx, _ = User_channel.get request in
+  Dream.stream ~headers:[ "Content-Type", "text/event-stream" ]
+  @@ listen_to_new_payments rx
 ;;
 
 let pay request =
