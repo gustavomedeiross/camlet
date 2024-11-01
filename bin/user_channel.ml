@@ -1,4 +1,6 @@
-type event = Payment_created
+module Payment = Storage.Payment
+
+type event = Payment_created of Payment.t
 type t = event Lwt_stream.t * (event option -> unit)
 
 exception Middleware_not_set

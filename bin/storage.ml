@@ -55,6 +55,7 @@ end = struct
            SELECT @string{id}, @int{amount}, @string{sender_account_id}, @string{recipient_account_id}, @ptime{timestamp}
            FROM payments
            WHERE sender_account_id = %string{account_id} OR recipient_account_id = %string{account_id}
+           ORDER BY timestamp DESC
            |sql}
           record_out]
     in
