@@ -18,6 +18,7 @@ let html_template body_html =
              ]
            (txt "")
        ; script ~a:[ a_src "https://unpkg.com/htmx-ext-sse@2.2.2/sse.js" ] (txt "")
+       ; link ~href:"/static/output.css" ~rel:[ `Stylesheet ] ()
        ])
     (body body_html)
 ;;

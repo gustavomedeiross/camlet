@@ -11,3 +11,6 @@ db.seed:
 db.reset:
 	@if [ -f db.sqlite ]; then rm db.sqlite; fi
 	$(MAKE) db.migrate
+
+tailwind.watch:
+	tailwindcss -i ./assets/input.css -o ./assets/output.css --watch

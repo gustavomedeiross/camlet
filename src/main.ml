@@ -8,7 +8,8 @@ let () =
   @@ Dream.memory_sessions
   @@ User_channel.middleware ()
   @@ Dream.router
-       [ Dream.get "accounts/:account_id" Handler.payments
+       [ Dream.get "static/**" @@ Dream.static "./assets"
+       ; Dream.get "accounts/:account_id" Handler.payments
        ; Dream.get "accounts/:account_id/stream" Handler.payments_stream
        ; Dream.get "/payments/:payment_id" Handler.payment_details
        ; Dream.post "/pay" Handler.pay

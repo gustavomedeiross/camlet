@@ -48,6 +48,8 @@
           inputsFrom = [ main ];
           buildInputs = devPackages ++ [
             pkgs.sqlite
+            # TODO: add tailwindcss cli when we move to nix-ocaml/nix-overlays
+            # pkgs.tailwindcss
           ];
         };
       });
