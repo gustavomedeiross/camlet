@@ -2,6 +2,9 @@ DB_PATH = db.sqlite
 MIGRATION_FILE = migrations/init.sql
 SEED_FILE = seeds/seed.sql
 
+app.run.watch:
+	dune exec -w camlet
+
 db.migrate:
 	sqlite3 $(DB_PATH) < $(MIGRATION_FILE)
 

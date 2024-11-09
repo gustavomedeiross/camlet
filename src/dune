@@ -1,5 +1,5 @@
 (executable
- (public_name ocaml_htmx)
+ (public_name camlet)
  (name main)
  (libraries
   dream

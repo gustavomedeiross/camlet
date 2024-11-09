@@ -1,11 +1,11 @@
 (lang dune 3.7)
 
-(name ocaml_htmx)
+(name camlet)
 
 (generate_opam_files true)
 
 (source
- (github gustavomedeiross/ocaml-htmx))
+ (github gustavomedeiross/camlet))
 
 (authors "Gustavo Medeiros")
 
@@ -16,7 +16,7 @@
 (documentation https://url/to/documentation)
 
 (package
- (name ocaml_htmx)
+ (name camlet)
  (synopsis "OCaml & HTMX")
  (description "A simple project to play with OCaml and HTMX")
  (depends

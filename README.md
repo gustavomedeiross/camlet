@@ -15,5 +15,5 @@ make migrate
 Running the server in watch mode (dev):
 
 ```sh
-dune exec -w ocaml_htmx
+dune exec -w camlet
 ```
