@@ -9,6 +9,7 @@ let () =
   @@ User_channel.middleware ()
   @@ Dream.router
        [ Dream.get "static/**" @@ Dream.static "./assets"
+       ; Dream.get "/" Handler.home
        ; Dream.get "accounts/:account_id" Handler.payments
        ; Dream.get "accounts/:account_id/stream" Handler.payments_stream
        ; Dream.get "/payments/:payment_id" Handler.payment_details

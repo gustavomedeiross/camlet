@@ -1,4 +1,4 @@
-# OCaml HTMX
+# Camlet
 
 Simple web server to play a bit with OCaml, Dream and HTMX.
 

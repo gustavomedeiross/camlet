@@ -27,7 +27,7 @@
   caqti-driver-sqlite3
   dune
   (dream
-   (>= "1.0"))
+   (>= "1.0.0~alpha5"))
   ppx_deriving
   ppx_rapper
   ppx_rapper_lwt

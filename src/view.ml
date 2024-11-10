@@ -105,3 +105,14 @@ let payment_detail payment =
         ]
     ]
 ;;
+
+let new_home =
+  let open Tyxml.Html in
+  html_template
+    [ main
+        ~a:[ a_class [ "h-screen grid grid-cols-5 gap-6 px-8 bg-red-400" ] ]
+        [ nav ~a:[ a_class [ "col-span-1 bg-green-400" ] ] []
+        ; div ~a:[ a_class [ "col-span-4 bg-blue-400" ] ] []
+        ]
+    ]
+;;
