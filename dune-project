@@ -22,12 +22,13 @@
  (depends
   (ocaml
    (and
-    (>= "4.06")
+    (>= "4.08")
     (< "5.3")))
   caqti-driver-sqlite3
   dune
   (dream
    (>= "1.0.0~alpha5"))
+  dream-livereload
   ppx_deriving
   ppx_rapper
   ppx_rapper_lwt

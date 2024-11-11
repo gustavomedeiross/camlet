@@ -6,9 +6,11 @@ let () =
   @@ Dream.sql_pool "sqlite3:db.sqlite"
   @@ Dream.logger
   @@ Dream.memory_sessions
+  @@ Dream_livereload.inject_script ()
   @@ User_channel.middleware ()
   @@ Dream.router
        [ Dream.get "static/**" @@ Dream.static "./assets"
+       ; Dream_livereload.route ()
        ; Dream.get "/" Handler.home
        ; Dream.get "accounts/:account_id" Handler.payments
        ; Dream.get "accounts/:account_id/stream" Handler.payments_stream

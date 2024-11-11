@@ -3,6 +3,7 @@
  (name main)
  (libraries
   dream
+  dream-livereload
   tyxml
   caqti-driver-sqlite3
   ppx_rapper
