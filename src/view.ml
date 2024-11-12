@@ -29,7 +29,6 @@ let payment_row payment =
     li [ a ~a:[ a_href (Format.sprintf "/payments/%s" payment.id) ] [ txt payment.id ] ])
 ;;
 
-(* TODO: we'll need to remove this behavior from the form so it doesn't duplicate the new entry *)
 let send_payment_form request account_id =
   let open Tyxml.Html in
   form
@@ -106,13 +105,46 @@ let payment_detail payment =
     ]
 ;;
 
+let box =
+  let open Tyxml.Html in
+  div
+    ~a:[ a_class [ "col-span-1 p-6" ] ]
+    [ div
+        ~a:[ a_class [ "p-4" ] ]
+        [ (* TODO: change to icon later *) div ~a:[ a_class [ "h-8 bg-black" ] ] [] ]
+    ; div
+        ~a:[ a_class [ "pt-4" ] ]
+        [ span ~a:[ a_class [ "text-2xl" ] ] [ txt "Enviar dinheiro" ]
+        ; span ~a:[ a_class [ "text-base" ] ] [ txt "Enviar dinheiro" ]
+        ]
+    ]
+;;
+
 let new_home =
   let open Tyxml.Html in
   html_template
     [ main
-        ~a:[ a_class [ "h-screen grid grid-cols-5 gap-6 px-8 bg-red-400" ] ]
+        ~a:[ a_class [ "h-screen grid grid-cols-5 gap-6 px-8 pt-6 bg-red-400" ] ]
         [ nav ~a:[ a_class [ "col-span-1 bg-green-400" ] ] []
-        ; div ~a:[ a_class [ "col-span-4 bg-blue-400" ] ] []
+        ; div
+            ~a:[ a_class [ "col-span-4 bg-blue-400" ] ]
+            [ header
+                ~a:[ a_class [ "bg-yellow-400" ] ]
+                (* TODO: text-3xl doesn't match 100% *)
+                [ div
+                    ~a:[ a_class [ "text-3xl p-3" ] ]
+                    [ div ~a:[ a_class [ "px-2.5" ] ] [ txt "Home" ] ]
+                ]
+            ; div
+                ~a:[ a_class [ "mt-8" ] ]
+                [ (* TODO: 3xl doesn't match 100% *)
+                  div ~a:[ a_class [ "text-3xl mb-1" ] ] [ txt "Saldo" ]
+                ; div ~a:[ a_class [ "text-5xl" ] ] [ txt "$ 20.000,00" ]
+                ]
+            ; div
+                ~a:[ a_class [ "mt-8 grid grid-col-4 bg-purple-400" ] ]
+                [ box; box; box; box ]
+            ]
         ]
     ]
 ;;
