@@ -124,23 +124,29 @@ let new_home =
         ~a:[ a_class [ "h-screen grid grid-cols-5 gap-6 px-8 pt-6 bg-red-400" ] ]
         [ nav ~a:[ a_class [ "col-span-1 bg-green-400" ] ] []
         ; div
-            ~a:[ a_class [ "col-span-4 bg-blue-400" ] ]
+            ~a:
+              [ a_class
+                  [ "col-span-4 bg-blue-400 grid grid-cols-4 gap-y-8 gap-x-6 \
+                     content-start"
+                  ]
+              ]
             [ header
-                ~a:[ a_class [ "bg-yellow-400" ] ]
+                ~a:[ a_class [ "col-span-4 bg-yellow-400" ] ]
                 (* TODO: text-3xl doesn't match 100% *)
                 [ div
                     ~a:[ a_class [ "text-3xl p-3" ] ]
                     [ div ~a:[ a_class [ "px-2.5" ] ] [ txt "Home" ] ]
                 ]
             ; div
-                ~a:[ a_class [ "mt-8" ] ]
+                ~a:[ a_class [ "col-span-4" ] ]
                 [ (* TODO: 3xl doesn't match 100% *)
                   div ~a:[ a_class [ "text-3xl mb-1" ] ] [ txt "Saldo" ]
                 ; div ~a:[ a_class [ "text-5xl" ] ] [ txt "$ 20.000,00" ]
                 ]
-            ; div
-                ~a:[ a_class [ "mt-8 grid grid-cols-4 gap-6 bg-purple-400" ] ]
-                [ box; box; box; box ]
+            ; box
+            ; box
+            ; box
+            ; box
             ]
         ]
     ]
