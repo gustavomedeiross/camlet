@@ -108,15 +108,12 @@ let payment_detail payment =
 let box =
   let open Tyxml.Html in
   div
-    ~a:[ a_class [ "col-span-1 p-6" ] ]
+    ~a:[ a_class [ "col-span-1 p-6 bg-gray-200 flex flex-col items-start" ] ]
     [ div
-        ~a:[ a_class [ "p-4" ] ]
-        [ (* TODO: change to icon later *) div ~a:[ a_class [ "h-8 bg-black" ] ] [] ]
-    ; div
-        ~a:[ a_class [ "pt-4" ] ]
-        [ span ~a:[ a_class [ "text-2xl" ] ] [ txt "Enviar dinheiro" ]
-        ; span ~a:[ a_class [ "text-base" ] ] [ txt "Enviar dinheiro" ]
-        ]
+        ~a:[ a_class [ "p-4 bg-gray-100" ] ]
+        [ (* TODO: change to icon later *) div ~a:[ a_class [ "h-8 w-8 bg-black" ] ] [] ]
+    ; span ~a:[ a_class [ "pt-4 text-2xl" ] ] [ txt "Enviar dinheiro" ]
+    ; span ~a:[ a_class [ "text-base" ] ] [ txt "Enviar dinheiro" ]
     ]
 ;;
 
@@ -142,7 +139,7 @@ let new_home =
                 ; div ~a:[ a_class [ "text-5xl" ] ] [ txt "$ 20.000,00" ]
                 ]
             ; div
-                ~a:[ a_class [ "mt-8 grid grid-col-4 bg-purple-400" ] ]
+                ~a:[ a_class [ "mt-8 grid grid-cols-4 gap-6 bg-purple-400" ] ]
                 [ box; box; box; box ]
             ]
         ]
