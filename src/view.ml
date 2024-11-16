@@ -105,7 +105,7 @@ let payment_detail payment =
     ]
 ;;
 
-let box =
+let action_box =
   let open Tyxml.Html in
   div
     ~a:[ a_class [ "col-span-1 p-6 bg-gray-200 flex flex-col items-start" ] ]
@@ -114,6 +114,47 @@ let box =
         [ (* TODO: change to icon later *) div ~a:[ a_class [ "h-8 w-8 bg-black" ] ] [] ]
     ; span ~a:[ a_class [ "pt-4 text-2xl" ] ] [ txt "Enviar dinheiro" ]
     ; span ~a:[ a_class [ "text-base" ] ] [ txt "Enviar dinheiro" ]
+    ]
+;;
+
+let info_box =
+  let open Tyxml.Html in
+  div
+    ~a:[ a_class [ "col-span-2 p-6 bg-gray-200 flex flex-col gap-6" ] ]
+    [ div
+        ~a:[ a_class [ "flex justify-between" ] ]
+        [ span ~a:[ a_class [ "text-2xl" ] ] [ txt "Recebidos" ] (* TODO select *)
+        ; div ~a:[ a_class [ "text-xl py-2 px-5 bg-green-300" ] ] [ txt "Esse mês" ]
+        ]
+    ; div ~a:[ a_class [ (* TODO: font-size: 40px *) "text-4xl" ] ] [ txt "$ 20.000,00" ]
+    ]
+;;
+
+let transaction_row =
+  let open Tyxml.Html in
+  div
+    ~a:[ a_class [ "bg-red-400 flex flex-row justify-between items-center" ] ]
+    [ div
+        ~a:[ a_class [ "flex flex-row gap-8" ] ]
+        [ div
+            ~a:[ a_class [ "bg-gray-200 p-4" ] ]
+            [ div ~a:[ a_class [ "h-8 w-8 bg-black" ] ] [ txt "" ] ]
+        ; div
+            ~a:[ a_class [ "flex flex-col bg-green-100" ] ]
+            [ span
+                ~a:[ a_class [ (* TODO: font-size: 22px *) "text-2xl " ] ]
+                [ txt "Dinheiro recebido" ]
+            ; div
+                ~a:[ a_class [ "flex flex-row gap-4" ] ]
+                [ span ~a:[ a_class [ "text-lg" ] ] [ txt "José Silva" ]
+                ; div ~a:[ a_class [ "bg-black w-px h-full" ] ] [ txt " " ]
+                ; span ~a:[ a_class [ "text-lg" ] ] [ txt "12:32:15 27 OUT" ]
+                ]
+            ]
+        ]
+    ; div
+        ~a:[ a_class [ (* TODO: font-size: 22px *) "text-2xl py-1 px-4 bg-gray-200" ] ]
+        [ txt "R$ 500,00" ]
     ]
 ;;
 
@@ -143,10 +184,16 @@ let new_home =
                   div ~a:[ a_class [ "text-3xl mb-1" ] ] [ txt "Saldo" ]
                 ; div ~a:[ a_class [ "text-5xl" ] ] [ txt "$ 20.000,00" ]
                 ]
-            ; box
-            ; box
-            ; box
-            ; box
+            ; action_box
+            ; action_box
+            ; action_box
+            ; action_box
+            ; info_box
+            ; info_box (* TODO: font-size: 32px *)
+            ; h2 ~a:[ a_class [ "col-span-4 text-4xl" ] ] [ txt "Transações" ]
+            ; div
+                ~a:[ a_class [ "col-span-4 bg-yellow-400 p-6 flex flex-col gap-16" ] ]
+                [ transaction_row; transaction_row; transaction_row ]
             ]
         ]
     ]
