@@ -80,4 +80,4 @@ let payment_details request =
   View.to_dream_html @@ View.payment_detail payment
 ;;
 
-let home _request = View.to_dream_html @@ View.new_home
+let home _request = View.to_dream_html @@ New_ui.home

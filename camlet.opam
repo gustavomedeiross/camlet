@@ -10,10 +10,11 @@ homepage: "https://github.com/gustavomedeiross/camlet"
 doc: "https://url/to/documentation"
 bug-reports: "https://github.com/gustavomedeiross/camlet/issues"
 depends: [
-  "ocaml" {>= "4.06" & < "5.3"}
+  "ocaml" {>= "4.08" & < "5.3"}
   "caqti-driver-sqlite3"
   "dune" {>= "3.7"}
-  "dream" {>= "1.0"}
+  "dream" {>= "1.0.0~alpha5"}
+  "dream-livereload"
   "ppx_deriving"
   "ppx_rapper"
   "ppx_rapper_lwt"
