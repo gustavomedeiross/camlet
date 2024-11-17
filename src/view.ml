@@ -122,9 +122,19 @@ let info_box =
   div
     ~a:[ a_class [ "col-span-2 p-6 bg-gray-200 flex flex-col gap-6" ] ]
     [ div
-        ~a:[ a_class [ "flex justify-between" ] ]
-        [ span ~a:[ a_class [ "text-2xl" ] ] [ txt "Recebidos" ] (* TODO select *)
-        ; div ~a:[ a_class [ "text-xl py-2 px-5 bg-green-300" ] ] [ txt "Esse mês" ]
+        ~a:[ a_class [ "flex justify-between items-center" ] ]
+        [ span ~a:[ a_class [ "text-2xl" ] ] [ txt "Recebidos" ]
+        ; (* TODO select *)
+          div
+            ~a:
+              [ a_class
+                  [ "py-2 px-5 bg-green-300 flex flex-row justify-between items-center \
+                     w-[45%]"
+                  ]
+              ]
+            [ span ~a:[ a_class [ "text-xl" ] ] [ txt "Esse mês" ]
+            ; div ~a:[ a_class [ "w-5 h-5 bg-black" ] ] [ txt "" ]
+            ]
         ]
     ; div ~a:[ a_class [ (* TODO: font-size: 40px *) "text-4xl" ] ] [ txt "$ 20.000,00" ]
     ]
@@ -158,6 +168,23 @@ let transaction_row =
     ]
 ;;
 
+let sidebar_button btn_text =
+  let open Tyxml.Html in
+  li
+    ~a:[ a_class [ "bg-white" ] ]
+    [ button
+        ~a:
+          [ a_class
+              [ "bg-green-300 px-5 py-4 text-xl w-full flex justify-start items-center \
+                 gap-2"
+              ]
+          ]
+        [ span ~a:[ a_class [ "w-5 h-5 bg-black" ] ] [ txt "" ]
+        ; span ~a:[] [ txt btn_text ]
+        ]
+    ]
+;;
+
 let new_home =
   let open Tyxml.Html in
   html_template
@@ -165,7 +192,19 @@ let new_home =
         ~a:[ a_class [ "h-screen grid grid-cols-5 gap-6 pt-6 bg-red-400" ] ]
         [ nav
             ~a:[ a_class [ "col-span-1 bg-green-400 pb-6 pl-8" ] ]
-            [ div ~a:[ a_class [ "h-full bg-pink-400" ] ] [] ]
+            [ div
+                ~a:[ a_class [ "h-full bg-pink-400 py-10 px-5 flex flex-col gap-14" ] ]
+                [ h1
+                    ~a:
+                      [ a_class
+                          [ (* TODO: font-size: 40px *) "text-4xl bg-white text-center" ]
+                      ]
+                    [ txt "Camlet" ]
+                ; ul
+                    ~a:[ a_class [ "bg-red-700 flex-1 flex flex-col gap-6" ] ]
+                    [ sidebar_button "Home"; sidebar_button "Minha Conta" ]
+                ]
+            ]
         ; main
             ~a:
               [ a_class
@@ -174,11 +213,22 @@ let new_home =
                   ]
               ]
             [ header
-                ~a:[ a_class [ "col-span-4 bg-yellow-400" ] ]
-                (* TODO: text-3xl doesn't match 100% *)
-                [ div
-                    ~a:[ a_class [ "text-3xl p-3" ] ]
-                    [ div ~a:[ a_class [ "px-2.5" ] ] [ txt "Home" ] ]
+                ~a:
+                  [ a_class
+                      [ "col-span-4 bg-yellow-400 p-3 flex flex-row justify-between \
+                         items-center"
+                      ]
+                  ]
+                [ h2
+                    ~a:[ a_class [ (* TODO: font-size: 28px *) "text-3xl  px-2.5" ] ]
+                    [ txt "Home" ]
+                ; div
+                    ~a:[ a_class [ "flex flex-row items-center gap-6" ] ]
+                    [ div ~a:[ a_class [ "w-6 h-6 bg-black" ] ] [ txt "" ]
+                    ; div
+                        ~a:[ a_class [ "p-3 bg-gray-300" ] ]
+                        [ div ~a:[ a_class [ "w-6 h-6 bg-black" ] ] [ txt "" ] ]
+                    ]
                 ]
             ; div
                 ~a:[ a_class [ "col-span-4" ] ]
