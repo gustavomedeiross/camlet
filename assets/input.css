@@ -11,3 +11,13 @@
     src: url('/static/fonts/Kanit-Regular.ttf') format('truetype');
   }
 }
+
+.home-select {
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M18 6L10 14L2 6L3.42 4.58L10 11.16L16.58 4.58L18 6Z" fill="%23242521"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 1.25rem top 50%;
+  background-size: 1.25rem auto;
+}

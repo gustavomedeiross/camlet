@@ -124,17 +124,14 @@ let info_box =
     [ div
         ~a:[ a_class [ "flex justify-between items-center" ] ]
         [ span ~a:[ a_class [ "text-2xl" ] ] [ txt "Recebidos" ]
-        ; (* TODO select *)
-          div
+        ; select
             ~a:
               [ a_class
                   [ "py-2 px-5 bg-green-300 flex flex-row justify-between items-center \
-                     w-[45%]"
+                     w-[45%] text-xl home-select outline-none"
                   ]
               ]
-            [ span ~a:[ a_class [ "text-xl" ] ] [ txt "Esse mês" ]
-            ; div ~a:[ a_class [ "w-5 h-5 bg-black" ] ] [ txt "" ]
-            ]
+            [ option (txt "Esse mês"); option (txt "Último mês") ]
         ]
     ; div ~a:[ a_class [ (* TODO: font-size: 40px *) "text-4xl" ] ] [ txt "$ 20.000,00" ]
     ]
