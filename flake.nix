@@ -1,12 +1,25 @@
 {
   inputs = {
-    opam-nix.url = "github:tweag/opam-nix";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    opam-nix = {
+      url = "github:tweag/opam-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs.follows = "opam-nix/nixpkgs";
   };
-  outputs = { self, flake-utils, opam-nix, nixpkgs }@inputs:
-    let package = "camlet";
-    in flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      flake-utils,
+      opam-nix,
+      nixpkgs,
+      ...
+    }@inputs:
+    let
+      package = "camlet";
+    in
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
         on = opam-nix.lib.${system};
@@ -33,13 +46,13 @@
             doNixSupport = false;
           });
         };
-        scope' = scope.overrideScope' overlay;
+        scope' = scope.overrideScope overlay;
         # The main package containing the executable
         main = scope'.${package};
         # Packages from devPackagesQuery
-        devPackages = builtins.attrValues
-          (pkgs.lib.getAttrs (builtins.attrNames devPackagesQuery) scope');
-      in {
+        devPackages = builtins.attrValues (pkgs.lib.getAttrs (builtins.attrNames devPackagesQuery) scope');
+      in
+      {
         legacyPackages = scope';
 
         packages.default = main;
@@ -48,7 +61,11 @@
           inputsFrom = [ main ];
           buildInputs = devPackages ++ [
             pkgs.sqlite
+            # TODO: https://github.com/NixOS/nixpkgs/issues/355486 still doesn't work for me >:(
+            pkgs.git
+            pkgs.tailwindcss
           ];
         };
-      });
+      }
+    );
 }
