@@ -33,6 +33,7 @@
   ppx_rapper
   ppx_rapper_lwt
   ptime
+  reason
   (tyxml
    (>= "4.6.0"))
   uuidm)
