@@ -1,6 +1,6 @@
 open Tyxml
 
-let arrow_down () =
+let arrow_down =
   Svg.(
     Tyxml.Html.svg
       ~a:[ a_width (20., None); a_height (20., None); a_viewBox (0., 0., 20., 20.) ]
@@ -14,7 +14,7 @@ let arrow_down () =
       ])
 ;;
 
-let arrow_up () =
+let arrow_up =
   Svg.(
     Tyxml.Html.svg
       ~a:[ a_width (20., None); a_height (20., None); a_viewBox (0., 0., 20., 20.) ]
@@ -27,7 +27,7 @@ let arrow_up () =
       ])
 ;;
 
-let bank () =
+let bank =
   Svg.(
     Tyxml.Html.svg
       ~a:[ a_width (20., None); a_height (20., None); a_viewBox (0., 0., 20., 20.) ]
@@ -43,7 +43,7 @@ let bank () =
       ])
 ;;
 
-let chevron_down () =
+let chevron_down =
   Svg.(
     Tyxml.Html.svg
       ~a:[ a_width (20., None); a_height (20., None); a_viewBox (0., 0., 20., 20.) ]
@@ -56,7 +56,7 @@ let chevron_down () =
       ])
 ;;
 
-let house () =
+let house =
   Svg.(
     Tyxml.Html.svg
       ~a:[ a_width (20., None); a_height (20., None); a_viewBox (0., 0., 20., 20.) ]
@@ -72,7 +72,7 @@ let house () =
       ])
 ;;
 
-let notifications () =
+let notifications =
   Svg.(
     Tyxml.Html.svg
       ~a:[ a_width (20., None); a_height (20., None); a_viewBox (0., 0., 20., 20.) ]
@@ -95,7 +95,7 @@ let notifications () =
       ])
 ;;
 
-let person () =
+let person =
   Svg.(
     Tyxml.Html.svg
       ~a:[ a_width (20., None); a_height (20., None); a_viewBox (0., 0., 20., 20.) ]
@@ -125,7 +125,7 @@ let person () =
       ])
 ;;
 
-let question_mark () =
+let question_mark =
   Svg.(
     Tyxml.Html.svg
       ~a:[ a_width (20., None); a_height (20., None); a_viewBox (0., 0., 20., 20.) ]
@@ -155,7 +155,7 @@ let question_mark () =
       ])
 ;;
 
-let receipt () =
+let receipt =
   Svg.(
     Tyxml.Html.svg
       ~a:[ a_width (20., None); a_height (20., None); a_viewBox (0., 0., 20., 20.) ]

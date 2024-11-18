@@ -69,9 +69,7 @@ let sidebar_button btn_text =
                  gap-2"
               ]
           ]
-        [ span ~a:[ a_class [ "w-5 h-5" ] ] [ Icons.house () ]
-        ; span ~a:[] [ txt btn_text ]
-        ]
+        [ span ~a:[ a_class [ "w-5 h-5" ] ] [ Icons.house ]; span ~a:[] [ txt btn_text ] ]
     ]
 ;;
 
