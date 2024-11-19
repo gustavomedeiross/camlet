@@ -10,12 +10,9 @@ module Page = {
         <script
           src="https://unpkg.com/htmx.org@2.0.3"
           integrity="sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq"
-          crossorigin="anonymous">
-          {Tyxml.Html.txt("")}
-        </script>
-        <script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js">
-          {Tyxml.Html.txt("")}
-        </script>
+          crossorigin="anonymous"
+        />
+        <script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js" />
         <link href="/static/output.css" rel="stylesheet" />
       </head>
       <body> ...children </body>
@@ -69,41 +66,55 @@ let transactionRow =
     <div className="text-2xl py-1 px-4 bg-gray-200"> "R$ 500,00" </div>
   </div>;
 
-let sidebarButton = btnText =>
+let navButton = (~btnText, ~icon, ~selected) =>
   <li className="bg-white">
     <button
-      className="bg-green-300 px-5 py-4 text-xl w-full flex justify-start items-center gap-2">
-      <span className="w-5 h-5"> Icons.house </span>
-      <span> {Tyxml.Html.txt(btnText)} </span>
+      className=[
+        "px-5 py-4 text-xl w-full flex justify-start items-center gap-2 rounded-full"
+        ++ (if (selected) {" bg-primary-50"} else {""}),
+      ]>
+      <span className="w-5 h-5 text-grey-100"> icon </span>
+      <span className="text-grey-100"> {Tyxml.Html.txt(btnText)} </span>
     </button>
   </li>;
 
 let home =
   <Page>
-    <div className="h-screen grid grid-cols-5 gap-6 pt-6 bg-red-400">
-      <nav className="col-span-1 bg-green-400 pb-6 pl-8">
-        <div className="h-full bg-pink-400 py-10 px-5 flex flex-col gap-14">
+    <div className="h-screen grid grid-cols-5 gap-6 pt-6 bg-grey-15">
+      <nav className="col-span-1 pb-6 pl-8">
+        <div
+          className="h-full rounded-3xl bg-grey-10 py-10 px-5 flex flex-col gap-14">
           // TODO: font-size: 40px
 
-            <h1 className="text-4xl bg-white text-center"> "Camlet" </h1>
-            <ul className="bg-red-700 flex-1 flex flex-col gap-6">
-              {sidebarButton("Home")}
-              {sidebarButton("Minha Conta")}
+            <h1 className="text-4xl text-center"> "Camlet" </h1>
+            <ul className="flex-1 flex flex-col gap-6">
+              {navButton(
+                 ~btnText="Home",
+                 ~icon=Icons.house(~width=20.0, ~height=20.0),
+                 ~selected=true,
+               )}
+              {navButton(
+                 ~btnText="Minha Conta",
+                 ~icon=Icons.person(~width=20.0, ~height=20.0),
+                 ~selected=false,
+               )}
             </ul>
           </div>
       </nav>
       <main
         className="col-span-4 bg-blue-400 grid grid-cols-4 gap-y-8 gap-x-6 content-start overflow-y-auto pr-8">
         <header
-          className="col-span-4 bg-yellow-400 p-3 flex flex-row justify-between items-center">
+          className="col-span-4 bg-grey-10 p-3 flex flex-row justify-between items-center rounded-3xl">
           // TODO: font-size: 28px
 
-            <h2 className="text-3xl px-2.5"> "Home" </h2>
+            <h2 className="text-3xl px-2.5 text-grey-100"> "Home" </h2>
             <div className="flex flex-row items-center gap-6">
-              <div className="w-6 h-6 bg-black"> {Tyxml.Html.txt("")} </div>
-              <div className="p-3 bg-gray-300">
-                <div className="w-6 h-6 bg-black"> {Tyxml.Html.txt("")} </div>
+              <div className="w-6 h-6 text-grey-100">
+                {Icons.questionMark(~width=24.0, ~height=24.0)}
               </div>
+              <div className="p-3 bg-gray-100 rounded-full text-grey-100">
+                // TODO: it's slightly off for some reason
+                 {Icons.notifications(~width=24.0, ~height=24.0)} </div>
             </div>
           </header>
         <div className="col-span-4">
