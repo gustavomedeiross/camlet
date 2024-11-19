@@ -21,6 +21,7 @@ depends: [
   "ptime"
   "reason"
   "tyxml" {>= "4.6.0"}
+  "tyxml-jsx"
   "uuidm"
   "odoc" {with-doc}
 ]

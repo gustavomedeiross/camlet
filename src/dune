@@ -11,4 +11,4 @@
   ptime
   uuidm)
  (preprocess
-  (pps lwt_ppx ppx_rapper ppx_deriving.show)))
+  (pps lwt_ppx ppx_rapper ppx_deriving.show tyxml-jsx)))

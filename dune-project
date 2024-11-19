@@ -36,6 +36,7 @@
   reason
   (tyxml
    (>= "4.6.0"))
+  tyxml-jsx
   uuidm)
  (tags
   (topics "to describe" your project)))
