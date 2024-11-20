@@ -61,8 +61,6 @@
           inputsFrom = [ main ];
           buildInputs = devPackages ++ [
             pkgs.sqlite
-            # TODO: https://github.com/NixOS/nixpkgs/issues/355486 still doesn't work for me >:(
-            pkgs.git
             pkgs.tailwindcss
           ];
         };
