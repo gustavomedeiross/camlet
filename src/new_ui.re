@@ -20,27 +20,30 @@ module Page = {
   };
 };
 
-let actionBox =
-  <div className="col-span-1 p-6 bg-gray-200 flex flex-col items-start">
-    <div className="p-4 bg-gray-100">
-      /* TODO: change to icon later */
-       <div className="h-8 w-8 bg-black" /> </div>
-    <span className="pt-4 text-2xl"> "Enviar dinheiro" </span>
-    <span className="text-base"> "Enviar dinheiro" </span>
+let actionBox = (~action) =>
+  <div
+    className="col-span-1 p-6 bg-grey-10 flex flex-col items-start rounded-3xl shadow-md">
+    <div
+      className="p-4 bg-grey-20 flex justify-center items-center rounded-full">
+      {Icons.arrowUp(~width=32., ~height=32.)}
+    </div>
+    <span className="pt-4 text-2xl text-grey-100"> {Html.txt(action)} </span>
+    <span className="text-base text-grey-50"> {Html.txt(action)} </span>
   </div>;
 
 let infoBox =
-  <div className="col-span-2 p-6 bg-gray-200 flex flex-col gap-6">
+  <div
+    className="col-span-2 p-6 bg-grey-10 flex flex-col gap-6 rounded-3xl shadow-md">
     <div className="flex justify-between items-center">
-      <span className="text-2xl"> "Recebidos" </span>
+      <span className="text-2xl text-grey-100"> "Recebidos" </span>
       <select
-        className="py-2 px-5 bg-green-300 flex flex-row justify-between items-center w-[45%] text-xl home-select outline-none">
+        className="py-2 px-5 bg-primary-50 rounded-full flex flex-row justify-between items-center w-[45%] text-xl home-select outline-none text-grey-100">
         <option> "Esse mês" </option>
         <option> "Último mês" </option>
       </select>
     </div>
     // TODO: font-size 40px
-    <div className="text-4xl"> "$ 20.000,00" </div>
+    <div className="text-4xl text-grey-100"> "$ 20.000,00" </div>
   </div>;
 
 let transactionRow =
@@ -123,10 +126,10 @@ let home =
             <div className="text-3xl mb-1"> "Saldo" </div>
             <div className="text-5xl"> "$ 20.000,00" </div>
           </div>
-        actionBox
-        actionBox
-        actionBox
-        actionBox
+        {actionBox(~action="Enviar dinheiro")}
+        {actionBox(~action="Depositar")}
+        {actionBox(~action="Sacar dinheiro")}
+        {actionBox(~action="Transações")}
         infoBox
         infoBox
         // TODO: font-size: 32px

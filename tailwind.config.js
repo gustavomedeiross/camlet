@@ -19,7 +19,9 @@ module.exports = {
                 'grey-100': '#242521',
                 'primary-50': '#DFFF44',
             },
-
+            boxShadow: {
+                'md': '0px 4px 20px 0px rgba(0, 0, 0, 0.04)',
+            }
         },
     },
     plugins: [],
