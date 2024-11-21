@@ -57,12 +57,21 @@
 
         packages.default = main;
 
-        devShells.default = pkgs.mkShell {
-          inputsFrom = [ main ];
-          buildInputs = devPackages ++ [
-            pkgs.sqlite
-            pkgs.tailwindcss
-          ];
+        devShells = {
+          default = pkgs.mkShell {
+            inputsFrom = [ main ];
+            buildInputs = devPackages ++ [
+              pkgs.sqlite
+              pkgs.tailwindcss
+            ];
+          };
+          # in case you already use opam and just want the extra stuff
+          opamDev = pkgs.mkShell {
+            buildInputs = [
+              pkgs.sqlite
+              pkgs.tailwindcss
+            ];
+          };
         };
       }
     );
