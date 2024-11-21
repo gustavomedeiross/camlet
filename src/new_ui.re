@@ -113,8 +113,8 @@ let home =
                 {Icons.questionMark(~width=24.0, ~height=24.0)}
               </div>
               <div className="p-3 bg-gray-100 rounded-full text-grey-100">
-                // TODO: it's slightly off for some reason
-                 {Icons.notifications(~width=24.0, ~height=24.0)} </div>
+                {Icons.notifications(~width=24.0, ~height=24.0)}
+              </div>
             </div>
           </header>
         <div className="col-span-4">
