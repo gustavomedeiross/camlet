@@ -6,7 +6,7 @@ module Page = {
   let createElement = (~children: list('a), ()): Html.doc => {
     <html>
       <head>
-        <title> {Html.txt("Payments")} </title>
+        <title> {Html.txt("Camlet")} </title>
         <script
           src="https://unpkg.com/htmx.org@2.0.3"
           integrity="sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq"

@@ -5,7 +5,7 @@ let elt_to_dream_html html = html |> elt_to_string |> Dream.html
 
 let html_template body_html =
   let open Tyxml.Html in
-  let page_title = title (txt "Payments") in
+  let page_title = title (txt "Transactions") in
   html
     (head
        page_title
@@ -23,84 +23,91 @@ let html_template body_html =
     (body body_html)
 ;;
 
-let payment_row payment =
-  let open Storage.Payment in
+let transaction_row transaction =
+  let open Storage.Transaction in
   Tyxml.Html.(
-    li [ a ~a:[ a_href (Format.sprintf "/payments/%s" payment.id) ] [ txt payment.id ] ])
+    li
+      [ a
+          ~a:[ a_href (Format.sprintf "/transactions/%s" transaction.id) ]
+          [ txt transaction.id ]
+      ])
 ;;
 
-let send_payment_form request account_id =
+let send_transaction_form request wallet_id =
   let open Tyxml.Html in
   form
     ~a:
       [ Unsafe.string_attrib "hx-post" "/pay"
-      ; Unsafe.string_attrib "hx-target" "#payments"
+      ; Unsafe.string_attrib "hx-target" "#transactions"
       ; Unsafe.string_attrib "hx-swap" "afterbegin"
       ]
     [ Unsafe.data (Dream.csrf_tag request)
     ; div
         [ label [ txt "Recipient key: " ]
-        ; input ~a:[ a_input_type `Text; a_name "recipient_account_id" ] ()
+        ; input ~a:[ a_input_type `Text; a_name "recipient_wallet_id" ] ()
         ]
     ; div
         [ label [ txt "Amount: " ]
         ; input ~a:[ a_input_type `Number; a_name "amount" ] ()
         ]
-    ; input ~a:[ a_input_type `Hidden; a_name "sender_account_id"; a_value account_id ] ()
+    ; input ~a:[ a_input_type `Hidden; a_name "sender_wallet_id"; a_value wallet_id ] ()
     ; br ()
     ; button ~a:[ a_button_type `Submit ] [ txt "Send money" ]
     ]
 ;;
 
-let payments_live account_id =
+let transactions_live wallet_id =
   let open Tyxml.Html in
   div
     ~a:
       [ Unsafe.string_attrib "hx-ext" "sse"
-      ; Unsafe.string_attrib
-          "sse-connect"
-          (Format.sprintf "/accounts/%s/stream" account_id)
+      ; Unsafe.string_attrib "sse-connect" (Format.sprintf "/wallets/%s/stream" wallet_id)
       ; Unsafe.string_attrib "sse-swap" "message"
-      ; Unsafe.string_attrib "hx-target" "#payments"
+      ; Unsafe.string_attrib "hx-target" "#transactions"
       ; Unsafe.string_attrib "hx-swap" "afterbegin"
       ]
     [ txt "" ]
 ;;
 
-let home payments request account_id =
+let home transactions request wallet_id =
   let open Tyxml.Html in
   html_template
-    [ div [ h1 [ txt "Send Payment" ]; send_payment_form request account_id ]
+    [ div [ h1 [ txt "Send Transaction" ]; send_transaction_form request wallet_id ]
     ; hr ()
     ; div
-        [ h1 [ txt "Payments" ]
-        ; payments_live account_id
-        ; ul ~a:[ a_id "payments" ] (List.map payment_row payments)
+        [ h1 [ txt "Transactions" ]
+        ; transactions_live wallet_id
+        ; ul ~a:[ a_id "transactions" ] (List.map transaction_row transactions)
         ]
     ]
 ;;
 
-let payment_detail payment =
-  let open Storage.Payment in
+let transaction_detail transaction =
+  let open Storage.Transaction in
   let open Tyxml.Html in
   html_template
-    [ h1 [ txt (Format.sprintf "Payment %s!" payment.id) ]
+    [ h1 [ txt (Format.sprintf "Transaction %s!" transaction.id) ]
     ; ul
-        [ li [ txt (Format.sprintf "ID: %s" payment.id) ]
-        ; li [ txt (Format.sprintf "Amount: %i" payment.amount) ]
+        [ li [ txt (Format.sprintf "ID: %s" transaction.id) ]
+        ; li [ txt (Format.sprintf "Amount: %i" transaction.amount) ]
         ; li
-            [ txt "Sender Account ID: "
+            [ txt "Sender Wallet ID: "
             ; a
-                ~a:[ a_href (Format.sprintf "/accounts/%s" payment.sender_account_id) ]
-                [ txt payment.sender_account_id ]
+                ~a:[ a_href (Format.sprintf "/wallets/%s" transaction.sender_wallet_id) ]
+                [ txt transaction.sender_wallet_id ]
             ]
         ; li
-            [ txt "Recipient Account ID: "
+            [ txt "Recipient Wallet ID: "
             ; a
-                ~a:[ a_href (Format.sprintf "/accounts/%s" payment.recipient_account_id) ]
-                [ txt payment.recipient_account_id ]
+                ~a:
+                  [ a_href (Format.sprintf "/wallets/%s" transaction.recipient_wallet_id)
+                  ]
+                [ txt transaction.recipient_wallet_id ]
             ]
-        ; li [ txt (Format.sprintf "Timestamp: %s" (Ptime.to_rfc3339 payment.timestamp)) ]
+        ; li
+            [ txt
+                (Format.sprintf "Timestamp: %s" (Ptime.to_rfc3339 transaction.timestamp))
+            ]
         ]
     ]
 ;;

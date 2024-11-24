@@ -1,11 +1,13 @@
 module type DB = Caqti_lwt.CONNECTION
 
-module Payment = Storage.Payment
+module Transaction = Storage.Transaction
 
-let payments request =
-  let account_id = Dream.param request "account_id" in
-  let%lwt payments = Storage.get_exn @@ Dream.sql request (Payment.get_all ~account_id) in
-  View.to_dream_html @@ View.home payments request account_id
+let transactions request =
+  let wallet_id = Dream.param request "wallet_id" in
+  let%lwt transactions =
+    Storage.get_exn @@ Dream.sql request (Transaction.get_all ~wallet_id)
+  in
+  View.to_dream_html @@ View.home transactions request wallet_id
 ;;
 
 (** Every event must be sent on this format:
@@ -19,65 +21,66 @@ let write_sse stream html =
 ;;
 
 (* TODO: ideally each user should have its own channel *)
-let rec listen_to_new_payments account_id user_channel stream =
+let rec listen_to_new_transactions wallet_id user_channel stream =
   let open User_channel in
   match%lwt Lwt_stream.get user_channel with
   | Some event ->
     let html_opt =
       match event with
-      | Payment_created payment when String.equal payment.recipient_account_id account_id
-        -> Some (View.payment_row payment)
-      | Payment_created _ -> None
+      | Transaction_created transaction
+        when String.equal transaction.recipient_wallet_id wallet_id ->
+        Some (View.transaction_row transaction)
+      | Transaction_created _ -> None
     in
     (match html_opt with
      | Some html ->
        let%lwt () = write_sse stream html in
-       listen_to_new_payments account_id user_channel stream
-     | None -> listen_to_new_payments account_id user_channel stream)
+       listen_to_new_transactions wallet_id user_channel stream
+     | None -> listen_to_new_transactions wallet_id user_channel stream)
   | None -> Lwt.return ()
 ;;
 
-let payments_stream request =
-  let account_id = Dream.param request "account_id" in
+let transactions_stream request =
+  let wallet_id = Dream.param request "wallet_id" in
   let rx, _ = User_channel.get request in
   Dream.stream ~headers:[ "Content-Type", "text/event-stream" ]
-  @@ listen_to_new_payments account_id rx
+  @@ listen_to_new_transactions wallet_id rx
 ;;
 
 let pay request =
-  let open Payment in
+  let open Transaction in
   match%lwt Dream.form request with
   | `Ok
       [ ("amount", amount)
-      ; ("recipient_account_id", recipient_account_id)
-      ; ("sender_account_id", sender_account_id)
+      ; ("recipient_wallet_id", recipient_wallet_id)
+      ; ("sender_wallet_id", sender_wallet_id)
       ] ->
     let amount = int_of_string amount in
-    let payment_id =
+    let transaction_id =
       Uuidm.v4_gen (Random.State.make_self_init ()) () |> Uuidm.to_string
     in
-    let payment =
-      { id = payment_id
+    let transaction =
+      { id = transaction_id
       ; amount
-      ; recipient_account_id
-      ; sender_account_id
+      ; recipient_wallet_id
+      ; sender_wallet_id
       ; timestamp = Ptime_clock.now ()
       }
     in
-    let%lwt () = Storage.get_exn @@ Dream.sql request @@ Payment.create payment in
+    let%lwt () = Storage.get_exn @@ Dream.sql request @@ Transaction.create transaction in
     let _, tx = User_channel.get request in
-    let event = User_channel.Payment_created payment in
+    let event = User_channel.Transaction_created transaction in
     tx (Some event);
-    View.elt_to_dream_html @@ View.payment_row payment
+    View.elt_to_dream_html @@ View.transaction_row transaction
   | _ -> Dream.empty `Bad_Request
 ;;
 
-let payment_details request =
-  let payment_id = Dream.param request "payment_id" in
-  let%lwt payment =
-    Storage.get_exn @@ Dream.sql request @@ Payment.get_by_id ~payment_id
+let transaction_details request =
+  let transaction_id = Dream.param request "transaction_id" in
+  let%lwt transaction =
+    Storage.get_exn @@ Dream.sql request @@ Transaction.get_by_id ~transaction_id
   in
-  View.to_dream_html @@ View.payment_detail payment
+  View.to_dream_html @@ View.transaction_detail transaction
 ;;
 
 let home _request = View.to_dream_html @@ New_ui.home

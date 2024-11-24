@@ -12,9 +12,9 @@ let () =
        [ Dream.get "static/**" @@ Dream.static "./assets"
        ; Dream_livereload.route ()
        ; Dream.get "/" Handler.home
-       ; Dream.get "accounts/:account_id" Handler.payments
-       ; Dream.get "accounts/:account_id/stream" Handler.payments_stream
-       ; Dream.get "/payments/:payment_id" Handler.payment_details
+       ; Dream.get "wallets/:wallet_id" Handler.transactions
+       ; Dream.get "wallets/:wallet_id/stream" Handler.transactions_stream
+       ; Dream.get "/transactions/:transaction_id" Handler.transaction_details
        ; Dream.post "/pay" Handler.pay
        ]
 ;;
