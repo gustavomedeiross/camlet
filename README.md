@@ -6,10 +6,14 @@ Simple web server to play a bit with OCaml, Dream and HTMX.
 
 You should have `nix` and `direnv` installed.
 
-Running the migrations:
+Setup the database:
 
 ```sh
-make migrate
+# Setup the database schema
+make db.init
+
+# Run seeds
+make db.seed
 ```
 
 Running the server in watch mode (dev):

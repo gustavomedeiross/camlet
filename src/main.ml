@@ -3,7 +3,7 @@ module Storage = Storage
 
 let () =
   Dream.run ~port:42069
-  @@ Dream.sql_pool "sqlite3:db.sqlite"
+  @@ Dream.sql_pool "sqlite3:db/db.sqlite"
   @@ Dream.logger
   @@ Dream.memory_sessions
   @@ Dream_livereload.inject_script ()

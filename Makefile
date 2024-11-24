@@ -1,19 +1,19 @@
-DB_PATH = db.sqlite
-MIGRATION_FILE = migrations/init.sql
-SEED_FILE = seeds/seed.sql
+DB_PATH = db/db.sqlite
+INIT_FILE = db/init.sql
+SEED_FILE = db/seed.sql
 
 app.run.watch:
 	dune exec -w camlet
 
-db.migrate:
-	sqlite3 $(DB_PATH) < $(MIGRATION_FILE)
+db.init:
+	sqlite3 $(DB_PATH) < $(INIT_FILE)
 
 db.seed:
 	sqlite3 $(DB_PATH) < $(SEED_FILE)
 
 db.reset:
-	@if [ -f db.sqlite ]; then rm db.sqlite; fi
-	$(MAKE) db.migrate
+	@if [ -f $(DB_PATH) ]; then rm $(DB_PATH); fi
+	$(MAKE) db.init
 
 tailwind.watch:
 	tailwindcss -i ./assets/input.css -o ./assets/output.css --watch
