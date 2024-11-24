@@ -12,7 +12,6 @@ module Err = struct
 end
 
 module Wallet : sig
-  (* TODO: use better types *)
   type t =
     { id : Uuid.t
     ; name : string
@@ -20,7 +19,6 @@ module Wallet : sig
     ; timestamp : Ptime.t
     }
 end = struct
-  (* TODO: use better types *)
   type t =
     { id : Uuid.t
     ; name : string
