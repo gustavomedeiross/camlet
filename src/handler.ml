@@ -3,11 +3,13 @@ module type DB = Caqti_lwt.CONNECTION
 module Transaction = Storage.Transaction
 
 let transactions request =
-  let wallet_id = Dream.param request "wallet_id" in
-  let%lwt transactions =
-    Storage.get_exn @@ Dream.sql request (Transaction.get_all ~wallet_id)
-  in
-  View.to_dream_html @@ View.home transactions request wallet_id
+  match Dream.param request "wallet_id" |> Uuid.of_string with
+  | Some wallet_id ->
+    let%lwt transactions =
+      Storage.Err.exn @@ Dream.sql request (Transaction.get_all ~wallet_id)
+    in
+    View.to_dream_html @@ View.home transactions request wallet_id
+  | None -> Dream.empty `Bad_Request
 ;;
 
 (** Every event must be sent on this format:
@@ -28,7 +30,7 @@ let rec listen_to_new_transactions wallet_id user_channel stream =
     let html_opt =
       match event with
       | Transaction_created transaction
-        when String.equal transaction.recipient_wallet_id wallet_id ->
+        when Uuid.equal transaction.recipient_wallet_id wallet_id ->
         Some (View.transaction_row transaction)
       | Transaction_created _ -> None
     in
@@ -41,12 +43,15 @@ let rec listen_to_new_transactions wallet_id user_channel stream =
 ;;
 
 let transactions_stream request =
-  let wallet_id = Dream.param request "wallet_id" in
-  let rx, _ = User_channel.get request in
-  Dream.stream ~headers:[ "Content-Type", "text/event-stream" ]
-  @@ listen_to_new_transactions wallet_id rx
+  match Dream.param request "wallet_id" |> Uuid.of_string with
+  | Some wallet_id ->
+    let rx, _ = User_channel.get request in
+    Dream.stream ~headers:[ "Content-Type", "text/event-stream" ]
+    @@ listen_to_new_transactions wallet_id rx
+  | None -> Dream.empty `Bad_Request
 ;;
 
+(* TODO: better interactions with forms & avoid exceptions for validation *)
 let pay request =
   let open Transaction in
   match%lwt Dream.form request with
@@ -55,19 +60,18 @@ let pay request =
       ; ("recipient_wallet_id", recipient_wallet_id)
       ; ("sender_wallet_id", sender_wallet_id)
       ] ->
-    let amount = int_of_string amount in
-    let transaction_id =
-      Uuidm.v4_gen (Random.State.make_self_init ()) () |> Uuidm.to_string
-    in
+    let amount = amount |> int_of_string |> Amount.of_int |> Option.get in
+    let recipient_wallet_id = recipient_wallet_id |> Uuid.of_string |> Option.get in
+    let sender_wallet_id = sender_wallet_id |> Uuid.of_string |> Option.get in
     let transaction =
-      { id = transaction_id
+      { id = Uuid.gen_v4 ()
       ; amount
       ; recipient_wallet_id
       ; sender_wallet_id
       ; timestamp = Ptime_clock.now ()
       }
     in
-    let%lwt () = Storage.get_exn @@ Dream.sql request @@ Transaction.create transaction in
+    let%lwt () = Storage.Err.exn @@ Dream.sql request @@ Transaction.create transaction in
     let _, tx = User_channel.get request in
     let event = User_channel.Transaction_created transaction in
     tx (Some event);
@@ -76,11 +80,13 @@ let pay request =
 ;;
 
 let transaction_details request =
-  let transaction_id = Dream.param request "transaction_id" in
-  let%lwt transaction =
-    Storage.get_exn @@ Dream.sql request @@ Transaction.get_by_id ~transaction_id
-  in
-  View.to_dream_html @@ View.transaction_detail transaction
+  match Dream.param request "transaction_id" |> Uuid.of_string with
+  | Some transaction_id ->
+    let%lwt transaction =
+      Storage.Err.exn @@ Dream.sql request @@ Transaction.get_by_id ~transaction_id
+    in
+    View.to_dream_html @@ View.transaction_detail transaction
+  | None -> Dream.empty `Bad_Request
 ;;
 
 let home _request = View.to_dream_html @@ New_ui.home

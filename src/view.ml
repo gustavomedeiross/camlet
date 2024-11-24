@@ -3,6 +3,8 @@ let elt_to_string html = Format.asprintf "%a" (Tyxml.Html.pp_elt ()) html
 let to_dream_html html = html |> html_to_string |> Dream.html
 let elt_to_dream_html html = html |> elt_to_string |> Dream.html
 
+module Transaction = Storage.Transaction
+
 let html_template body_html =
   let open Tyxml.Html in
   let page_title = title (txt "Transactions") in
@@ -24,12 +26,12 @@ let html_template body_html =
 ;;
 
 let transaction_row transaction =
-  let open Storage.Transaction in
+  let open Transaction in
   Tyxml.Html.(
     li
       [ a
-          ~a:[ a_href (Format.sprintf "/transactions/%s" transaction.id) ]
-          [ txt transaction.id ]
+          ~a:[ a_href (Format.asprintf "/transactions/%a" Uuid.pp transaction.id) ]
+          [ txt "Transaction" ]
       ])
 ;;
 
@@ -50,7 +52,13 @@ let send_transaction_form request wallet_id =
         [ label [ txt "Amount: " ]
         ; input ~a:[ a_input_type `Number; a_name "amount" ] ()
         ]
-    ; input ~a:[ a_input_type `Hidden; a_name "sender_wallet_id"; a_value wallet_id ] ()
+    ; input
+        ~a:
+          [ a_input_type `Hidden
+          ; a_name "sender_wallet_id"
+          ; a_value (Uuid.to_string wallet_id)
+          ]
+        ()
     ; br ()
     ; button ~a:[ a_button_type `Submit ] [ txt "Send money" ]
     ]
@@ -76,33 +84,40 @@ let home transactions request wallet_id =
     ; hr ()
     ; div
         [ h1 [ txt "Transactions" ]
-        ; transactions_live wallet_id
+        ; transactions_live (Uuid.to_string wallet_id)
         ; ul ~a:[ a_id "transactions" ] (List.map transaction_row transactions)
         ]
     ]
 ;;
 
 let transaction_detail transaction =
-  let open Storage.Transaction in
+  let open Transaction in
   let open Tyxml.Html in
   html_template
-    [ h1 [ txt (Format.sprintf "Transaction %s!" transaction.id) ]
+    [ h1 [ txt (Format.asprintf "Transaction %a!" Uuid.pp transaction.id) ]
     ; ul
-        [ li [ txt (Format.sprintf "ID: %s" transaction.id) ]
-        ; li [ txt (Format.sprintf "Amount: %i" transaction.amount) ]
+        [ li [ txt (Format.asprintf "ID: %a" Uuid.pp transaction.id) ]
+        ; li [ txt (Format.sprintf "Amount: %i" (Amount.to_int transaction.amount)) ]
         ; li
             [ txt "Sender Wallet ID: "
             ; a
-                ~a:[ a_href (Format.sprintf "/wallets/%s" transaction.sender_wallet_id) ]
-                [ txt transaction.sender_wallet_id ]
+                ~a:
+                  [ a_href
+                      (Format.asprintf "/wallets/%a" Uuid.pp transaction.sender_wallet_id)
+                  ]
+                [ txt (Uuid.to_string transaction.sender_wallet_id) ]
             ]
         ; li
             [ txt "Recipient Wallet ID: "
             ; a
                 ~a:
-                  [ a_href (Format.sprintf "/wallets/%s" transaction.recipient_wallet_id)
+                  [ a_href
+                      (Format.asprintf
+                         "/wallets/%a"
+                         Uuid.pp
+                         transaction.recipient_wallet_id)
                   ]
-                [ txt transaction.recipient_wallet_id ]
+                [ txt (Uuid.to_string transaction.recipient_wallet_id) ]
             ]
         ; li
             [ txt
