@@ -22,10 +22,10 @@ let write_sse stream html =
   Dream.flush stream
 ;;
 
-(* TODO: ideally each user should have its own channel *)
-let rec listen_to_new_transactions wallet_id user_channel stream =
-  let open User_channel in
-  match%lwt Lwt_stream.get user_channel with
+(* TODO: ideally each wallet should have its own channel *)
+let rec listen_to_new_transactions wallet_id wallet_channel stream =
+  let open Wallet_channel in
+  match%lwt Lwt_stream.get wallet_channel with
   | Some event ->
     let html_opt =
       match event with
@@ -37,15 +37,15 @@ let rec listen_to_new_transactions wallet_id user_channel stream =
     (match html_opt with
      | Some html ->
        let%lwt () = write_sse stream html in
-       listen_to_new_transactions wallet_id user_channel stream
-     | None -> listen_to_new_transactions wallet_id user_channel stream)
+       listen_to_new_transactions wallet_id wallet_channel stream
+     | None -> listen_to_new_transactions wallet_id wallet_channel stream)
   | None -> Lwt.return ()
 ;;
 
 let transactions_stream request =
   match Dream.param request "wallet_id" |> Uuid.of_string with
   | Some wallet_id ->
-    let rx, _ = User_channel.get request in
+    let rx, _ = Wallet_channel.get request in
     Dream.stream ~headers:[ "Content-Type", "text/event-stream" ]
     @@ listen_to_new_transactions wallet_id rx
   | None -> Dream.empty `Bad_Request
@@ -72,8 +72,8 @@ let pay request =
       }
     in
     let%lwt () = Storage.Err.exn @@ Dream.sql request @@ Transaction.create transaction in
-    let _, tx = User_channel.get request in
-    let event = User_channel.Transaction_created transaction in
+    let _, tx = Wallet_channel.get request in
+    let event = Wallet_channel.Transaction_created transaction in
     tx (Some event);
     View.elt_to_dream_html @@ View.transaction_row transaction
   | _ -> Dream.empty `Bad_Request

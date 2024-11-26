@@ -7,7 +7,7 @@ let () =
   @@ Dream.logger
   @@ Dream.memory_sessions
   @@ Dream_livereload.inject_script ()
-  @@ User_channel.middleware ()
+  @@ Wallet_channel.middleware ()
   @@ Dream.router
        [ Dream.get "static/**" @@ Dream.static "./assets"
        ; Dream_livereload.route ()

@@ -6,7 +6,7 @@ type t = event Lwt_stream.t * (event option -> unit)
 exception Middleware_not_set
 
 let create () : t = Lwt_stream.create ()
-let field = Dream.new_field () ~name:"user channel"
+let field = Dream.new_field () ~name:"wallet channel"
 
 let get request : t =
   match Dream.field request field with
