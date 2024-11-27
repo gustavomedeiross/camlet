@@ -93,6 +93,16 @@ let home transactions request wallet_id =
 let transaction_detail transaction =
   let open Transaction in
   let open Tyxml.Html in
+  let sender_wallet_id =
+    transaction.sender_wallet_id
+    |> Option.map Uuid.to_string
+    |> Option.value ~default:"missing sender wallet id"
+  in
+  let recipient_wallet_id =
+    transaction.sender_wallet_id
+    |> Option.map Uuid.to_string
+    |> Option.value ~default:"missing recipient wallet id"
+  in
   html_template
     [ h1 [ txt (Format.asprintf "Transaction %a!" Uuid.pp transaction.id) ]
     ; ul
@@ -101,23 +111,14 @@ let transaction_detail transaction =
         ; li
             [ txt "Sender Wallet ID: "
             ; a
-                ~a:
-                  [ a_href
-                      (Format.asprintf "/wallets/%a" Uuid.pp transaction.sender_wallet_id)
-                  ]
-                [ txt (Uuid.to_string transaction.sender_wallet_id) ]
+                ~a:[ a_href (Format.asprintf "/wallets/%s" sender_wallet_id) ]
+                [ txt sender_wallet_id ]
             ]
         ; li
             [ txt "Recipient Wallet ID: "
             ; a
-                ~a:
-                  [ a_href
-                      (Format.asprintf
-                         "/wallets/%a"
-                         Uuid.pp
-                         transaction.recipient_wallet_id)
-                  ]
-                [ txt (Uuid.to_string transaction.recipient_wallet_id) ]
+                ~a:[ a_href (Format.asprintf "/wallets/%s" recipient_wallet_id) ]
+                [ txt recipient_wallet_id ]
             ]
         ; li
             [ txt

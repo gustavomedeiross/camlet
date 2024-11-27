@@ -27,12 +27,35 @@ end = struct
     }
 end
 
+module Transaction_kind = struct
+  type t =
+    | Transfer
+    | Deposit
+    | Withdrawal
+
+  let t =
+    let encode = function
+      | Transfer -> Ok "transfer"
+      | Deposit -> Ok "deposit"
+      | Withdrawal -> Ok "withdrawal"
+    in
+    let decode = function
+      | "transfer" -> Ok Transfer
+      | "deposit" -> Ok Deposit
+      | "withdrawal" -> Ok Withdrawal
+      | _ -> Error "invalid transaction kind"
+    in
+    Caqti_type.(custom ~encode ~decode string)
+  ;;
+end
+
 module Transaction : sig
   type t =
     { id : Uuid.t
     ; amount : Amount.t
-    ; sender_wallet_id : Uuid.t
-    ; recipient_wallet_id : Uuid.t
+    ; kind : Transaction_kind.t
+    ; sender_wallet_id : Uuid.t option
+    ; recipient_wallet_id : Uuid.t option
     ; timestamp : Ptime.t
     }
 
@@ -43,8 +66,9 @@ end = struct
   type t =
     { id : Uuid.t
     ; amount : Amount.t
-    ; sender_wallet_id : Uuid.t
-    ; recipient_wallet_id : Uuid.t
+    ; kind : Transaction_kind.t
+    ; sender_wallet_id : Uuid.t option
+    ; recipient_wallet_id : Uuid.t option
     ; timestamp : Ptime.t
     }
 
@@ -53,7 +77,7 @@ end = struct
       [%rapper
         get_many
           {sql|
-           SELECT @Uuid{id}, @Amount{amount}, @Uuid{sender_wallet_id}, @Uuid{recipient_wallet_id}, @ptime{timestamp}
+           SELECT @Uuid{id}, @Amount{amount}, @Transaction_kind{kind}, @Uuid?{sender_wallet_id}, @Uuid?{recipient_wallet_id}, @ptime{timestamp}
            FROM transactions
            WHERE sender_wallet_id = %Uuid{wallet_id} OR recipient_wallet_id = %Uuid{wallet_id}
            ORDER BY timestamp DESC
@@ -68,7 +92,7 @@ end = struct
       [%rapper
         get_one
           {sql|
-           SELECT @Uuid{id}, @Amount{amount}, @Uuid{sender_wallet_id}, @Uuid{recipient_wallet_id}, @ptime{timestamp}
+           SELECT @Uuid{id}, @Amount{amount}, @Transaction_kind{kind}, @Uuid?{sender_wallet_id}, @Uuid?{recipient_wallet_id}, @ptime{timestamp}
            FROM transactions
            WHERE id = %Uuid{transaction_id}
            |sql}
@@ -85,9 +109,9 @@ end = struct
            INSERT INTO transactions VALUES (
              %Uuid{id},
              %Amount{amount},
-             'transfer',
-             %Uuid{sender_wallet_id},
-             %Uuid{recipient_wallet_id},
+             %Transaction_kind{kind},
+             %Uuid?{sender_wallet_id},
+             %Uuid?{recipient_wallet_id},
              %ptime{timestamp}
            )
            |sql}

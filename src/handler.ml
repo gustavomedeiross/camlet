@@ -1,6 +1,7 @@
 module type DB = Caqti_lwt.CONNECTION
 
 module Transaction = Storage.Transaction
+module Transaction_kind = Storage.Transaction_kind
 
 let transactions request =
   match Dream.param request "wallet_id" |> Uuid.of_string with
@@ -30,7 +31,7 @@ let rec listen_to_new_transactions wallet_id wallet_channel stream =
     let html_opt =
       match event with
       | Transaction_created transaction
-        when Uuid.equal transaction.recipient_wallet_id wallet_id ->
+        when Option.equal Uuid.equal transaction.recipient_wallet_id (Some wallet_id) ->
         Some (View.transaction_row transaction)
       | Transaction_created _ -> None
     in
@@ -66,8 +67,9 @@ let pay request =
     let transaction =
       { id = Uuid.gen_v4 ()
       ; amount
-      ; recipient_wallet_id
-      ; sender_wallet_id
+      ; kind = Transaction_kind.Transfer
+      ; recipient_wallet_id = Some recipient_wallet_id
+      ; sender_wallet_id = Some sender_wallet_id
       ; timestamp = Ptime_clock.now ()
       }
     in
