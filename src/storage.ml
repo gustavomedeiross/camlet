@@ -27,7 +27,14 @@ end = struct
     }
 end
 
-module Transaction_kind = struct
+module Transaction_kind : sig
+  type t =
+    | Transfer
+    | Deposit
+    | Withdrawal
+
+  include Rapper.CUSTOM with type t := t
+end = struct
   type t =
     | Transfer
     | Deposit
