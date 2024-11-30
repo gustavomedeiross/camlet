@@ -18,6 +18,7 @@ module Wallet = struct
     ; balance : Amount.t
     ; timestamp : Ptime.t
     }
+  [@@deriving show]
 
   let of_rapper ~id ~name ~balance ~timestamp = { id; name; balance; timestamp }
 
@@ -71,6 +72,7 @@ module Relation = struct
   type ('key, 'data) t =
     | Loaded of 'key * 'data
     | Not_loaded of 'key
+  [@@deriving show]
 
   let key = function
     | Loaded (k, _) -> k
@@ -106,21 +108,6 @@ module Transaction : sig
   val get_by_id : transaction_id:Uuid.t -> (module DB) -> (t, Err.t) Lwt_result.t
   val create : t -> (module DB) -> (unit, Err.t) Lwt_result.t
 end = struct
-  type kind =
-    | Transfer of
-        { sender_wallet : (Uuid.t, Wallet.t) Relation.t
-        ; recipient_wallet : (Uuid.t, Wallet.t) Relation.t
-        }
-    | Deposit of { recipient_wallet : (Uuid.t, Wallet.t) Relation.t }
-    | Withdrawal of { sender_wallet : (Uuid.t, Wallet.t) Relation.t }
-
-  type t =
-    { id : Uuid.t
-    ; amount : Amount.t
-    ; kind : kind
-    ; timestamp : Ptime.t
-    }
-
   type record =
     { id : Uuid.t
     ; amount : Amount.t
@@ -129,20 +116,51 @@ end = struct
     ; recipient_wallet_id : Uuid.t option
     ; timestamp : Ptime.t
     }
+  [@@deriving show]
+
+  type kind =
+    | Transfer of
+        { sender_wallet : (Uuid.t, Wallet.t) Relation.t
+        ; recipient_wallet : (Uuid.t, Wallet.t) Relation.t
+        }
+    | Deposit of { recipient_wallet : (Uuid.t, Wallet.t) Relation.t }
+    | Withdrawal of { sender_wallet : (Uuid.t, Wallet.t) Relation.t }
+  [@@deriving show]
+
+  type t =
+    { id : Uuid.t
+    ; amount : Amount.t
+    ; kind : kind
+    ; timestamp : Ptime.t
+    }
+  [@@deriving show]
 
   (* TODO: introduce newtypes for sender and receiver, this is very error prone *)
-  (* let load_wallets tx sender_wlt recipient_wlt = *)
-  (*   match tx.kind, sender_wlt, recipient_wlt with *)
-  (*   | Transfer { sender_wallet; recipient_wallet }, Some sw, Some rw -> *)
-  (*     Transfer *)
-  (*       { sender_wallet = *)
-  (*           ( Relation.load sender_wallet sw *)
-  (*           , recipient_wallet = Relation.load recipient_wlt rw ) *)
-  (*       } *)
-  (*   | _ -> failwith "not implemented" *)
-  (* ;; *)
+  let load_wallets (tx, sw, rw) =
+    let kind =
+      match tx.kind, sw, rw with
+      | Transfer { sender_wallet; recipient_wallet }, Some sw, Some rw ->
+        Transfer
+          { sender_wallet = sw |> Relation.load sender_wallet
+          ; recipient_wallet = rw |> Relation.load recipient_wallet
+          }
+      | Deposit { recipient_wallet }, None, Some rw ->
+        Deposit { recipient_wallet = rw |> Relation.load recipient_wallet }
+      | Withdrawal { sender_wallet }, Some sw, None ->
+        Withdrawal { sender_wallet = sw |> Relation.load sender_wallet }
+      | tk, sw, rw ->
+        raise
+          (Invalid_argument
+             (Format.sprintf
+                "Failed to load wallet relations (%s, %s, %s)"
+                ([%show: kind] tk)
+                ([%show: Wallet.t option] sw)
+                ([%show: Wallet.t option] rw)))
+    in
+    { tx with kind }
+  ;;
 
-  let to_record (tx : t) : record =
+  let to_record tx =
     let module TK = Transaction_kind in
     let kind, sender_wallet_id, recipient_wallet_id =
       match tx.kind with
@@ -164,7 +182,7 @@ end = struct
     }
   ;;
 
-  let of_rapper ~id ~amount ~kind ~sender_wallet_id ~recipient_wallet_id ~timestamp : t =
+  let of_rapper ~id ~amount ~kind ~sender_wallet_id ~recipient_wallet_id ~timestamp =
     let module TK = Transaction_kind in
     let kind =
       match kind, sender_wallet_id, recipient_wallet_id with
@@ -206,32 +224,30 @@ end = struct
   ;;
 
   (* TODO: this is way more painful than it should be, see if there's a better alternative to Caqti *)
-  (* let get_all_v2 ~wallet_id db_conn = *)
-  (*   let open Lwt_result.Infix in *)
-  (*   let query = *)
-  (*     [%rapper *)
-  (*       get_many *)
-  (*         {sql| *)
-  (*          SELECT @Uuid{txs.id}, @Amount{txs.amount}, *)
-  (*                 @Transaction_kind{txs.kind}, @Uuid?{txs.sender_wallet_id}, *)
-  (*                 @Uuid?{txs.recipient_wallet_id}, *)
-  (*                 @ptime{txs.timestamp}, *)
-  (*                 @Uuid?{sw.id}, @string?{sw.name}, @Amount?{sw.balance}, @ptime?{sw.timestamp} *)
-  (*          FROM transactions AS txs *)
-  (*          LEFT JOIN wallets AS sw ON sw.id = txs.sender_wallet_id *)
-  (*          LEFT JOIN wallets AS rw ON rw.id = txs.recipient_wallet_id *)
-  (*          WHERE txs.sender_wallet_id = %Uuid{wallet_id} OR txs.recipient_wallet_id = %Uuid{wallet_id} *)
-  (*          ORDER BY txs.timestamp DESC *)
-  (*          |sql} *)
-  (*         function_out] *)
-  (*       (of_rapper, Wallet.opt_of_rapper) *)
-  (*   in *)
-  (*   let bla = query ~wallet_id db_conn |> Lwt_result.map_error Err.of_db_err in *)
-  (*   let blo = *)
-  (*     bla >|= fun txs -> List.map (fun (tx, sw) -> failwith "not implemented") txs *)
-  (*   in *)
-  (*   failwith "Not implemented" *)
-  (* ;; *)
+  let get_all_v2 ~wallet_id db_conn =
+    let query =
+      [%rapper
+        get_many
+          {sql|
+           SELECT @Uuid{txs.id}, @Amount{txs.amount},
+                  @Transaction_kind{txs.kind}, @Uuid?{txs.sender_wallet_id},
+                  @Uuid?{txs.recipient_wallet_id},
+                  @ptime{txs.timestamp},
+                  @Uuid?{sw.id}, @string?{sw.name}, @Amount?{sw.balance}, @ptime?{sw.timestamp},
+                  @Uuid?{rw.id}, @string?{rw.name}, @Amount?{rw.balance}, @ptime?{rw.timestamp}
+           FROM transactions AS txs
+           LEFT JOIN wallets AS sw ON sw.id = txs.sender_wallet_id
+           LEFT JOIN wallets AS rw ON rw.id = txs.recipient_wallet_id
+           WHERE txs.sender_wallet_id = %Uuid{wallet_id} OR txs.recipient_wallet_id = %Uuid{wallet_id}
+           ORDER BY txs.timestamp DESC
+           |sql}
+          function_out]
+        (of_rapper, Wallet.opt_of_rapper, Wallet.opt_of_rapper)
+    in
+    query ~wallet_id db_conn
+    |> Lwt_result.map_error Err.of_db_err
+    |> Lwt_result.map (List.map load_wallets)
+  ;;
 
   let get_by_id ~transaction_id db_conn =
     let query =
