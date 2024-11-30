@@ -9,7 +9,7 @@ let () =
   @@ Dream_livereload.inject_script ()
   @@ Wallet_channel.middleware ()
   @@ Dream.router
-       [ Dream.get "static/**" @@ Dream.static "./assets"
+       [ Dream.get "static/**" @@ Dream.static "./static"
        ; Dream_livereload.route ()
        ; Dream.get "/" Handler.home
        ; Dream.get "wallets/:wallet_id" Handler.transactions

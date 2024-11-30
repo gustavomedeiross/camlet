@@ -1,3 +1,5 @@
+# TODO: move this code to dune file later :)
+
 DB_PATH = db/db.sqlite
 INIT_FILE = db/init.sql
 SEED_FILE = db/seed.sql
@@ -16,4 +18,4 @@ db.reset:
 	$(MAKE) db.init
 
 tailwind.watch:
-	tailwindcss -i ./assets/input.css -o ./assets/output.css --watch
+	tailwindcss -c ./tailwind/tailwind.config.js -i ./tailwind/input.css -o ./static/output.css --watch
