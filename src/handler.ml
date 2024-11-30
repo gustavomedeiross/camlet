@@ -1,6 +1,7 @@
 module type DB = Caqti_lwt.CONNECTION
 
 module Transaction = Storage.Transaction
+module Relation = Storage.Relation
 module Transaction_kind = Storage.Transaction_kind
 
 let transactions request =
@@ -30,8 +31,8 @@ let rec listen_to_new_transactions wallet_id wallet_channel stream =
   | Some event ->
     let html_opt =
       match event with
-      | Transaction_created ({ kind = Deposit { recipient_wallet_id }; _ } as transaction)
-        when Uuid.equal recipient_wallet_id wallet_id ->
+      | Transaction_created ({ kind = Deposit { recipient_wallet }; _ } as transaction)
+        when Uuid.equal (Relation.key recipient_wallet) wallet_id ->
         Some (View.transaction_row transaction)
       | Transaction_created _ -> None
     in
@@ -62,12 +63,16 @@ let pay request =
       ; ("sender_wallet_id", sender_wallet_id)
       ] ->
     let amount = amount |> int_of_string |> Amount.of_int |> Option.get in
-    let recipient_wallet_id = recipient_wallet_id |> Uuid.of_string |> Option.get in
-    let sender_wallet_id = sender_wallet_id |> Uuid.of_string |> Option.get in
+    let recipient_wallet =
+      recipient_wallet_id |> Uuid.of_string |> Option.get |> Relation.make
+    in
+    let sender_wallet =
+      sender_wallet_id |> Uuid.of_string |> Option.get |> Relation.make
+    in
     let transaction =
       { id = Uuid.gen_v4 ()
       ; amount
-      ; kind = Transfer { recipient_wallet_id; sender_wallet_id }
+      ; kind = Transfer { recipient_wallet; sender_wallet }
       ; timestamp = Ptime_clock.now ()
       }
     in
