@@ -33,12 +33,15 @@ module Transaction_kind : sig
     | Deposit
     | Withdrawal
 
+  val pp : Format.formatter -> t -> unit
+
   include Rapper.CUSTOM with type t := t
 end = struct
   type t =
     | Transfer
     | Deposit
     | Withdrawal
+  [@@deriving show]
 
   let t =
     let encode = function
@@ -57,7 +60,41 @@ end = struct
 end
 
 module Transaction : sig
+  type kind =
+    | Transfer of
+        { sender_wallet_id : Uuid.t
+        ; recipient_wallet_id : Uuid.t
+        }
+    | Deposit of { recipient_wallet_id : Uuid.t }
+    | Withdrawal of { sender_wallet_id : Uuid.t }
+
   type t =
+    { id : Uuid.t
+    ; amount : Amount.t
+    ; kind : kind
+    ; timestamp : Ptime.t
+    }
+
+  val get_all : wallet_id:Uuid.t -> (module DB) -> (t list, Err.t) Lwt_result.t
+  val get_by_id : transaction_id:Uuid.t -> (module DB) -> (t, Err.t) Lwt_result.t
+  val create : t -> (module DB) -> (unit, Err.t) Lwt_result.t
+end = struct
+  type kind =
+    | Transfer of
+        { sender_wallet_id : Uuid.t
+        ; recipient_wallet_id : Uuid.t
+        }
+    | Deposit of { recipient_wallet_id : Uuid.t }
+    | Withdrawal of { sender_wallet_id : Uuid.t }
+
+  type t =
+    { id : Uuid.t
+    ; amount : Amount.t
+    ; kind : kind
+    ; timestamp : Ptime.t
+    }
+
+  type record =
     { id : Uuid.t
     ; amount : Amount.t
     ; kind : Transaction_kind.t
@@ -66,18 +103,27 @@ module Transaction : sig
     ; timestamp : Ptime.t
     }
 
-  val get_all : wallet_id:Uuid.t -> (module DB) -> (t list, Err.t) Lwt_result.t
-  val get_by_id : transaction_id:Uuid.t -> (module DB) -> (t, Err.t) Lwt_result.t
-  val create : t -> (module DB) -> (unit, Err.t) Lwt_result.t
-end = struct
-  type t =
-    { id : Uuid.t
-    ; amount : Amount.t
-    ; kind : Transaction_kind.t
-    ; sender_wallet_id : Uuid.t option
-    ; recipient_wallet_id : Uuid.t option
-    ; timestamp : Ptime.t
-    }
+  let to_record (_tx : t) : record = failwith "Not implemented"
+
+  let of_record ~id ~amount ~kind ~sender_wallet_id ~recipient_wallet_id ~timestamp : t =
+    let module TK = Transaction_kind in
+    let kind =
+      match kind, sender_wallet_id, recipient_wallet_id with
+      | TK.Transfer, Some sender_wallet_id, Some recipient_wallet_id ->
+        Transfer { sender_wallet_id; recipient_wallet_id }
+      | TK.Deposit, None, Some recipient_wallet_id -> Deposit { recipient_wallet_id }
+      | TK.Withdrawal, Some sender_wallet_id, None -> Withdrawal { sender_wallet_id }
+      | k, s, r ->
+        raise
+          (Invalid_argument
+             (Format.sprintf
+                "Invalid transaction (%s, %s %s)"
+                ([%show: TK.t] k)
+                ([%show: Uuid.t option] s)
+                ([%show: Uuid.t option] r)))
+    in
+    { id; amount; kind : kind; timestamp : Ptime.t }
+  ;;
 
   let get_all ~wallet_id db_conn =
     let query =
@@ -89,7 +135,8 @@ end = struct
            WHERE sender_wallet_id = %Uuid{wallet_id} OR recipient_wallet_id = %Uuid{wallet_id}
            ORDER BY timestamp DESC
            |sql}
-          record_out]
+          function_out]
+        of_record
     in
     query ~wallet_id db_conn |> Lwt_result.map_error Err.of_db_err
   ;;
@@ -103,7 +150,8 @@ end = struct
            FROM transactions
            WHERE id = %Uuid{transaction_id}
            |sql}
-          record_out]
+          function_out]
+        of_record
     in
     query ~transaction_id db_conn |> Lwt_result.map_error Err.of_db_err
   ;;
@@ -124,6 +172,6 @@ end = struct
            |sql}
           record_in]
     in
-    query transaction db_conn |> Lwt_result.map_error Err.of_db_err
+    query (transaction |> to_record) db_conn |> Lwt_result.map_error Err.of_db_err
   ;;
 end

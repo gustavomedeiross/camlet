@@ -30,8 +30,8 @@ let rec listen_to_new_transactions wallet_id wallet_channel stream =
   | Some event ->
     let html_opt =
       match event with
-      | Transaction_created transaction
-        when Option.equal Uuid.equal transaction.recipient_wallet_id (Some wallet_id) ->
+      | Transaction_created ({ kind = Deposit { recipient_wallet_id }; _ } as transaction)
+        when Uuid.equal recipient_wallet_id wallet_id ->
         Some (View.transaction_row transaction)
       | Transaction_created _ -> None
     in
@@ -67,9 +67,7 @@ let pay request =
     let transaction =
       { id = Uuid.gen_v4 ()
       ; amount
-      ; kind = Transaction_kind.Transfer
-      ; recipient_wallet_id = Some recipient_wallet_id
-      ; sender_wallet_id = Some sender_wallet_id
+      ; kind = Transfer { recipient_wallet_id; sender_wallet_id }
       ; timestamp = Ptime_clock.now ()
       }
     in
