@@ -11,7 +11,7 @@ let () =
   @@ Dream.router
        [ Dream.get "static/**" @@ Dream.static "./static"
        ; Dream_livereload.route ()
-       ; Dream.get "/" Handler.home
+       ; Dream.get "/:wallet_id" Handler.home
        ; Dream.get "wallets/:wallet_id" Handler.transactions
        ; Dream.get "wallets/:wallet_id/stream" Handler.transactions_stream
        ; Dream.get "/transactions/:transaction_id" Handler.transaction_details

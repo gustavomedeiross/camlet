@@ -4,6 +4,11 @@ module Transaction = Storage.Transaction
 module Relation = Storage.Relation
 module Transaction_kind = Storage.Transaction_kind
 
+let html_to_string html = Format.asprintf "%a" (Tyxml.Html.pp ()) html
+let elt_to_string html = Format.asprintf "%a" (Tyxml.Html.pp_elt ()) html
+let to_dream_html html = html |> html_to_string |> Dream.html
+let elt_to_dream_html html = html |> elt_to_string |> Dream.html
+
 let transactions request =
   match Dream.param request "wallet_id" |> Uuid.of_string with
   | Some wallet_id ->
@@ -94,4 +99,13 @@ let transaction_details request =
   | None -> Dream.empty `Bad_Request
 ;;
 
-let home _request = View.to_dream_html @@ New_ui.home
+let home request =
+  match Dream.param request "wallet_id" |> Uuid.of_string with
+  | Some wallet_id ->
+    let%lwt transactions =
+      Storage.Err.exn @@ Dream.sql request (Transaction.get_all ~wallet_id)
+    in
+    View.to_dream_html @@ New_ui.home request ~transactions ~wallet_id
+  (* TODO: Render 404 page *)
+  | None -> Dream.empty `Bad_Request
+;;

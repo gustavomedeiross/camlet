@@ -86,16 +86,27 @@ module Relation = struct
     | Loaded (k, _) -> Loaded (k, d)
     | Not_loaded k -> Loaded (k, d)
   ;;
+
+  (** @raise Invalid_argument if [t] is [Not_loaded] *)
+  let get_data = function
+    | Loaded (_, d) -> d
+    | Not_loaded _ -> raise (Invalid_argument "Called get_data on ")
+  ;;
 end
 
 module Transaction : sig
+  type transfer =
+    { sender_wallet : (Uuid.t, Wallet.t) Relation.t
+    ; recipient_wallet : (Uuid.t, Wallet.t) Relation.t
+    }
+
+  type deposit = { recipient_wallet : (Uuid.t, Wallet.t) Relation.t }
+  type withdrawal = { sender_wallet : (Uuid.t, Wallet.t) Relation.t }
+
   type kind =
-    | Transfer of
-        { sender_wallet : (Uuid.t, Wallet.t) Relation.t
-        ; recipient_wallet : (Uuid.t, Wallet.t) Relation.t
-        }
-    | Deposit of { recipient_wallet : (Uuid.t, Wallet.t) Relation.t }
-    | Withdrawal of { sender_wallet : (Uuid.t, Wallet.t) Relation.t }
+    | Transfer of transfer
+    | Deposit of deposit
+    | Withdrawal of withdrawal
 
   type t =
     { id : Uuid.t
@@ -118,13 +129,19 @@ end = struct
     }
   [@@deriving show]
 
+  type transfer =
+    { sender_wallet : (Uuid.t, Wallet.t) Relation.t
+    ; recipient_wallet : (Uuid.t, Wallet.t) Relation.t
+    }
+  [@@deriving show]
+
+  type deposit = { recipient_wallet : (Uuid.t, Wallet.t) Relation.t } [@@deriving show]
+  type withdrawal = { sender_wallet : (Uuid.t, Wallet.t) Relation.t } [@@deriving show]
+
   type kind =
-    | Transfer of
-        { sender_wallet : (Uuid.t, Wallet.t) Relation.t
-        ; recipient_wallet : (Uuid.t, Wallet.t) Relation.t
-        }
-    | Deposit of { recipient_wallet : (Uuid.t, Wallet.t) Relation.t }
-    | Withdrawal of { sender_wallet : (Uuid.t, Wallet.t) Relation.t }
+    | Transfer of transfer
+    | Deposit of deposit
+    | Withdrawal of withdrawal
   [@@deriving show]
 
   type t =

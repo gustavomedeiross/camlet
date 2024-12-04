@@ -45,7 +45,18 @@ let infoBox = (~title, ~value) =>
     <div className="text-[2.5rem] text-grey-100"> {Html.txt(value)} </div>
   </div>;
 
-let transactionRow =
+let transactionRow = transaction => {
+  open Storage.Transaction;
+  open Tyxml.Html;
+
+  let title =
+    switch (transaction.kind) {
+    // TODO: this is wrong, we should check if it's "recebida" or "enviada"
+    | Transfer(_) => txt("Transferência recebida")
+    | Deposit(_) => txt("Dinheiro sacado")
+    | Withdrawal(_) => txt("Dinheiro sacado")
+    };
+
   <div
     className="flex flex-row justify-between items-center py-8 first:pt-0 last:pb-0">
     <div className="flex flex-row gap-8">
@@ -53,9 +64,7 @@ let transactionRow =
         {Icons.bank(~width=32., ~height=32.)}
       </div>
       <div className="flex flex-col">
-        <span className="text-[1.375rem] text-grey-100">
-          "Dinheiro recebido"
-        </span>
+        <span className="text-[1.375rem] text-grey-100"> title </span>
         <div className="flex flex-row gap-4">
           <span className="text-lg text-grey-50"> "José Silva" </span>
           <div className="bg-grey-50 w-px h-full"> " " </div>
@@ -68,6 +77,7 @@ let transactionRow =
       "R$ 500,00"
     </div>
   </div>;
+};
 
 let navButton = (~btnText, ~icon, ~selected) =>
   <li>
@@ -81,7 +91,9 @@ let navButton = (~btnText, ~icon, ~selected) =>
     </button>
   </li>;
 
-let home =
+let home = (request, ~transactions, ~wallet_id) => {
+  let (_, _, _) = (request, transactions, wallet_id);
+
   <Page>
     <div className="h-screen grid grid-cols-5 gap-6 pt-6 bg-grey-15">
       <nav className="col-span-1 pb-6 pl-8">
@@ -118,6 +130,7 @@ let home =
         </header>
         <div className="col-span-4">
           <div className="text-[2rem] mb-1 text-grey-100"> "Saldo" </div>
+          // TODO update with dynamic value
           <div className="text-5xl text-grey-100"> "$ 20.000,00" </div>
         </div>
         {actionBox(
@@ -136,6 +149,7 @@ let home =
            ~action="Transações",
            ~icon=Icons.receipt(~width=32., ~height=32.),
          )}
+        // TODO update with dynamic value
         {infoBox(~title="Recebidos", ~value="$ 20.000,00")}
         {infoBox(~title="Gastos", ~value="$ 10.000,00")}
         <h2 className="col-span-4 text-[2rem] text-grey-100">
@@ -143,10 +157,9 @@ let home =
         </h2>
         <div
           className="col-span-4 bg-grey-10 p-6 grid grid-cols-1 rounded-3xl divide-y divide-grey-25">
-          transactionRow
-          transactionRow
-          transactionRow
+          ...{List.map(transactionRow, transactions)}
         </div>
       </main>
     </div>
   </Page>;
+};

@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS wallets (
 CREATE TABLE IF NOT EXISTS transactions (
     id TEXT PRIMARY KEY NOT NULL,
     amount INTEGER NOT NULL CHECK(amount >= 0),
-    kind TEXT CHECK(type IN ('transfer', 'deposit', 'withdrawal')) NOT NULL,
+    kind TEXT CHECK(kind IN ('transfer', 'deposit', 'withdrawal')) NOT NULL,
     sender_wallet_id TEXT,
     recipient_wallet_id TEXT,
     timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
