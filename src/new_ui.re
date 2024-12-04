@@ -45,16 +45,45 @@ let infoBox = (~title, ~value) =>
     <div className="text-[2.5rem] text-grey-100"> {Html.txt(value)} </div>
   </div>;
 
-let transactionRow = transaction => {
+// TODO: create transaction type just for this component
+// TODO: refactor: remove all this logic from this component, this is horrible
+let transactionRow = (transaction, ~wallet_id) => {
   open Storage.Transaction;
+  module Relation = Storage.Relation;
   open Tyxml.Html;
 
-  let title =
+  // TODO: we should have an _actual_ formatter for humans here :)
+  let dateFormatted =
+    transaction.timestamp |> Format.asprintf("%a", Ptime.pp_human()) |> txt;
+
+  let (title, nameOpt) =
     switch (transaction.kind) {
-    // TODO: this is wrong, we should check if it's "recebida" or "enviada"
-    | Transfer(_) => txt("Transferência recebida")
-    | Deposit(_) => txt("Dinheiro sacado")
-    | Withdrawal(_) => txt("Dinheiro sacado")
+    | Transfer(transfer) =>
+      if (Uuid.equal(Relation.key(transfer.sender_wallet), wallet_id)) {
+        (txt("Transferência enviada"), Some(txt("José da Silva")));
+      } else {
+        (txt("Transferência recebida"), Some(txt("José da Silva")));
+      }
+    | Deposit(_) => (txt("Dinheiro sacado"), None)
+    | Withdrawal(_) => (txt("Dinheiro sacado"), None)
+    };
+
+  let amount =
+    transaction.amount
+    |> Amount.to_string_pretty
+    |> Format.sprintf("R$ %s")
+    |> txt;
+
+  let name =
+    switch (nameOpt) {
+    | Some(name) =>
+      <>
+        <span className="text-lg text-grey-50"> name </span>
+        <div className="bg-grey-50 w-px h-full"> " " </div>
+        <span className="text-lg text-grey-50"> dateFormatted </span>
+      </>
+    | None =>
+      <> <span className="text-lg text-grey-50"> dateFormatted </span> </>
     };
 
   <div
@@ -65,16 +94,12 @@ let transactionRow = transaction => {
       </div>
       <div className="flex flex-col">
         <span className="text-[1.375rem] text-grey-100"> title </span>
-        <div className="flex flex-row gap-4">
-          <span className="text-lg text-grey-50"> "José Silva" </span>
-          <div className="bg-grey-50 w-px h-full"> " " </div>
-          <span className="text-lg text-grey-50"> "12:32:15 27 OUT" </span>
-        </div>
+        <div className="flex flex-row gap-4"> ...name </div>
       </div>
     </div>
     <div
       className="text-[1.375rem] py-1 px-4 bg-grey-20 text-grey-100 rounded-full">
-      "R$ 500,00"
+      amount
     </div>
   </div>;
 };
@@ -91,9 +116,7 @@ let navButton = (~btnText, ~icon, ~selected) =>
     </button>
   </li>;
 
-let home = (request, ~transactions, ~wallet_id) => {
-  let (_, _, _) = (request, transactions, wallet_id);
-
+let home = (_request, ~transactions, ~wallet_id) => {
   <Page>
     <div className="h-screen grid grid-cols-5 gap-6 pt-6 bg-grey-15">
       <nav className="col-span-1 pb-6 pl-8">
@@ -157,7 +180,7 @@ let home = (request, ~transactions, ~wallet_id) => {
         </h2>
         <div
           className="col-span-4 bg-grey-10 p-6 grid grid-cols-1 rounded-3xl divide-y divide-grey-25">
-          ...{List.map(transactionRow, transactions)}
+          ...{List.map(tx => transactionRow(tx, ~wallet_id), transactions)}
         </div>
       </main>
     </div>
