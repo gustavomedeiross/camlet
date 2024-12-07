@@ -100,7 +100,9 @@ let transaction_detail transaction =
         ; li [ txt (Format.sprintf "Amount: %i" (Amount.to_int transaction.amount)) ]
         ; li
             [ txt
-                (Format.sprintf "Timestamp: %s" (Ptime.to_rfc3339 transaction.timestamp))
+                (Format.sprintf
+                   "Timestamp: %s"
+                   (Datetime.to_string_pretty transaction.timestamp))
             ]
         ]
     ]

@@ -16,7 +16,7 @@ module Wallet = struct
     { id : Uuid.t
     ; name : string
     ; balance : Amount.t
-    ; timestamp : Ptime.t
+    ; timestamp : Datetime.t
     }
   [@@deriving show]
 
@@ -129,7 +129,7 @@ module Transaction = struct
     ; kind : Transaction_kind.t
     ; sender_wallet_id : Uuid.t option
     ; recipient_wallet_id : Uuid.t option
-    ; timestamp : Ptime.t
+    ; timestamp : Datetime.t
     }
   [@@deriving show]
 
@@ -152,7 +152,7 @@ module Transaction = struct
     { id : Uuid.t
     ; amount : Amount.t
     ; kind : kind
-    ; timestamp : Ptime.t
+    ; timestamp : Datetime.t
     }
   [@@deriving show]
 
@@ -225,7 +225,7 @@ module Transaction = struct
                 ([%show: Uuid.t option] s)
                 ([%show: Uuid.t option] r)))
     in
-    { id; amount; kind : kind; timestamp : Ptime.t }
+    { id; amount; kind : kind; timestamp : Datetime.t }
   ;;
 
   let get_all ~wallet_id db_conn =
@@ -233,7 +233,7 @@ module Transaction = struct
       [%rapper
         get_many
           {sql|
-           SELECT @Uuid{id}, @Amount{amount}, @Transaction_kind{kind}, @Uuid?{sender_wallet_id}, @Uuid?{recipient_wallet_id}, @ptime{timestamp}
+           SELECT @Uuid{id}, @Amount{amount}, @Transaction_kind{kind}, @Uuid?{sender_wallet_id}, @Uuid?{recipient_wallet_id}, @Datetime{timestamp}
            FROM transactions
            WHERE sender_wallet_id = %Uuid{wallet_id} OR recipient_wallet_id = %Uuid{wallet_id}
            ORDER BY timestamp DESC
@@ -253,9 +253,9 @@ module Transaction = struct
            SELECT @Uuid{txs.id}, @Amount{txs.amount},
                   @Transaction_kind{txs.kind}, @Uuid?{txs.sender_wallet_id},
                   @Uuid?{txs.recipient_wallet_id},
-                  @ptime{txs.timestamp},
-                  @Uuid?{sw.id}, @string?{sw.name}, @Amount?{sw.balance}, @ptime?{sw.timestamp},
-                  @Uuid?{rw.id}, @string?{rw.name}, @Amount?{rw.balance}, @ptime?{rw.timestamp}
+                  @Datetime{txs.timestamp},
+                  @Uuid?{sw.id}, @string?{sw.name}, @Amount?{sw.balance}, @Datetime?{sw.timestamp},
+                  @Uuid?{rw.id}, @string?{rw.name}, @Amount?{rw.balance}, @Datetime?{rw.timestamp}
            FROM transactions AS txs
            LEFT JOIN wallets AS sw ON sw.id = txs.sender_wallet_id
            LEFT JOIN wallets AS rw ON rw.id = txs.recipient_wallet_id
@@ -275,7 +275,7 @@ module Transaction = struct
       [%rapper
         get_one
           {sql|
-           SELECT @Uuid{id}, @Amount{amount}, @Transaction_kind{kind}, @Uuid?{sender_wallet_id}, @Uuid?{recipient_wallet_id}, @ptime{timestamp}
+           SELECT @Uuid{id}, @Amount{amount}, @Transaction_kind{kind}, @Uuid?{sender_wallet_id}, @Uuid?{recipient_wallet_id}, @Datetime{timestamp}
            FROM transactions
            WHERE id = %Uuid{transaction_id}
            |sql}
@@ -296,7 +296,7 @@ module Transaction = struct
              %Transaction_kind{kind},
              %Uuid?{sender_wallet_id},
              %Uuid?{recipient_wallet_id},
-             %ptime{timestamp}
+             %Datetime{timestamp}
            )
            |sql}
           record_in]

@@ -30,20 +30,15 @@ module Home = {
       id: Uuid.t,
       amount: Amount.t,
       kind,
-      timestamp: Ptime.t,
+      timestamp: Datetime.t,
     };
 
-    // TODO: create transaction type just for this component
-    // TODO: refactor: remove all this logic from this component, this is horrible
     let render = transaction => {
       module Relation = Storage.Relation;
       open Tyxml.Html;
 
-      // TODO: we should have an _actual_ formatter for humans here :)
       let dateFormatted =
-        transaction.timestamp
-        |> Format.asprintf("%a", Ptime.pp_human())
-        |> txt;
+        transaction.timestamp |> Datetime.to_string_pretty |> txt;
 
       let (title, nameOpt) =
         switch (transaction.kind) {

@@ -79,7 +79,7 @@ let pay request =
       { id = Uuid.gen_v4 ()
       ; amount
       ; kind = Transfer { recipient_wallet; sender_wallet }
-      ; timestamp = Ptime_clock.now ()
+      ; timestamp = Datetime.now ()
       }
     in
     let%lwt () = Storage.Err.exn @@ Dream.sql request @@ Transaction.create transaction in
