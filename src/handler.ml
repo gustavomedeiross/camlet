@@ -100,11 +100,35 @@ let transaction_details request =
   | None -> Dream.empty `Bad_Request
 ;;
 
+let to_transaction_row (transaction : Transaction.t) wallet_id =
+  let module TR = New_ui.Home.TransactionRow in
+  let kind =
+    match transaction.kind with
+    | Deposit _ -> TR.Deposit
+    | Withdrawal _ -> TR.Withdrawal
+    | Transfer transfer ->
+      let recipient_wallet = Relation.get_data transfer.recipient_wallet in
+      let sender_wallet = Relation.get_data transfer.sender_wallet in
+      if Uuid.equal recipient_wallet.id wallet_id
+      then TR.TransferReceived { from_wallet = sender_wallet.name }
+      else TR.TransferSent { to_wallet = recipient_wallet.name }
+  in
+  let open TR in
+  { id = transaction.id
+  ; amount = transaction.amount
+  ; kind
+  ; timestamp = transaction.timestamp
+  }
+;;
+
 let home request =
   match Dream.param request "wallet_id" |> Uuid.of_string with
   | Some wallet_id ->
     let%lwt transactions =
-      Storage.Err.exn @@ Dream.sql request (Transaction.get_all ~wallet_id)
+      Storage.Err.exn @@ Dream.sql request (Transaction.get_all_v2 ~wallet_id)
+    in
+    let transactions =
+      List.map (fun tx -> to_transaction_row tx wallet_id) transactions
     in
     let%lwt balance =
       Storage.Err.exn @@ Dream.sql request (Wallet.get_balance ~wallet_id)
@@ -112,8 +136,7 @@ let home request =
     let%lwt income, expenses =
       Storage.Err.exn @@ Dream.sql request (Wallet.get_income_and_expenses ~wallet_id)
     in
-    View.to_dream_html
-    @@ New_ui.home request ~transactions ~wallet_id ~balance ~income ~expenses
+    View.to_dream_html @@ New_ui.Home.render ~transactions ~balance ~income ~expenses
   (* TODO: Render 4xx page *)
   | None -> Dream.empty `Bad_Request
 ;;

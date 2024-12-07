@@ -118,35 +118,11 @@ module Relation = struct
   (** @raise Invalid_argument if [t] is [Not_loaded] *)
   let get_data = function
     | Loaded (_, d) -> d
-    | Not_loaded _ -> raise (Invalid_argument "Called get_data on ")
+    | Not_loaded _ -> raise (Invalid_argument "Called get_data on relation not loaded")
   ;;
 end
 
-module Transaction : sig
-  type transfer =
-    { sender_wallet : (Uuid.t, Wallet.t) Relation.t
-    ; recipient_wallet : (Uuid.t, Wallet.t) Relation.t
-    }
-
-  type deposit = { recipient_wallet : (Uuid.t, Wallet.t) Relation.t }
-  type withdrawal = { sender_wallet : (Uuid.t, Wallet.t) Relation.t }
-
-  type kind =
-    | Transfer of transfer
-    | Deposit of deposit
-    | Withdrawal of withdrawal
-
-  type t =
-    { id : Uuid.t
-    ; amount : Amount.t
-    ; kind : kind
-    ; timestamp : Ptime.t
-    }
-
-  val get_all : wallet_id:Uuid.t -> (module DB) -> (t list, Err.t) Lwt_result.t
-  val get_by_id : transaction_id:Uuid.t -> (module DB) -> (t, Err.t) Lwt_result.t
-  val create : t -> (module DB) -> (unit, Err.t) Lwt_result.t
-end = struct
+module Transaction = struct
   type record =
     { id : Uuid.t
     ; amount : Amount.t
