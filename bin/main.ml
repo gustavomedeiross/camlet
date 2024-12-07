@@ -1,5 +1,5 @@
 module Handler = Camlet.Handler
-module Wallet_channel = Camlet.Wallet_channel
+module Event_channel = Camlet.Event_channel
 
 let () =
   Dream.run ~port:42069
@@ -7,7 +7,7 @@ let () =
   @@ Dream.logger
   @@ Dream.memory_sessions
   @@ Dream_livereload.inject_script ()
-  @@ Wallet_channel.middleware ()
+  @@ Event_channel.middleware ()
   @@ Dream.router
        [ Dream.get "static/**" @@ Dream.static "./static"
        ; Dream_livereload.route ()

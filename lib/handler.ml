@@ -1,9 +1,6 @@
 module type DB = Caqti_lwt.CONNECTION
 
-module Transaction = Storage.Transaction
-module Wallet = Storage.Wallet
-module Relation = Storage.Relation
-module Transaction_kind = Storage.Transaction_kind
+module Relation = Transaction.Relation
 
 let html_to_string html = Format.asprintf "%a" (Tyxml.Html.pp ()) html
 let elt_to_string html = Format.asprintf "%a" (Tyxml.Html.pp_elt ()) html
@@ -29,9 +26,9 @@ let write_sse stream html =
 ;;
 
 (* TODO: ideally each wallet should have its own channel *)
-let rec listen_to_new_transactions wallet_id wallet_channel stream =
-  let open Wallet_channel in
-  match%lwt Lwt_stream.get wallet_channel with
+let rec listen_to_new_transactions wallet_id event_channel stream =
+  let open Event_channel in
+  match%lwt Lwt_stream.get event_channel with
   | Some event ->
     let html_opt =
       match event with
@@ -43,15 +40,15 @@ let rec listen_to_new_transactions wallet_id wallet_channel stream =
     (match html_opt with
      | Some html ->
        let%lwt () = write_sse stream html in
-       listen_to_new_transactions wallet_id wallet_channel stream
-     | None -> listen_to_new_transactions wallet_id wallet_channel stream)
+       listen_to_new_transactions wallet_id event_channel stream
+     | None -> listen_to_new_transactions wallet_id event_channel stream)
   | None -> Lwt.return ()
 ;;
 
 let transactions_stream request =
   match Dream.param request "wallet_id" |> Uuid.of_string with
   | Some wallet_id ->
-    let rx, _ = Wallet_channel.get request in
+    let rx, _ = Event_channel.get request in
     Dream.stream ~headers:[ "Content-Type", "text/event-stream" ]
     @@ listen_to_new_transactions wallet_id rx
   | None -> Dream.empty `Bad_Request
@@ -81,8 +78,8 @@ let pay request =
       }
     in
     let%lwt () = Dream.sql request @@ Transaction.create transaction in
-    let _, tx = Wallet_channel.get request in
-    let event = Wallet_channel.Transaction_created transaction in
+    let _, tx = Event_channel.get request in
+    let event = Event_channel.Transaction_created transaction in
     tx (Some event);
     View.elt_to_dream_html @@ View.transaction_row transaction
   | _ -> Dream.empty `Bad_Request

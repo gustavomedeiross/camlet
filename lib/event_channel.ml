@@ -1,12 +1,10 @@
-module Transaction = Storage.Transaction
-
 type event = Transaction_created of Transaction.t
 type t = event Lwt_stream.t * (event option -> unit)
 
 exception Middleware_not_set
 
 let create () : t = Lwt_stream.create ()
-let field = Dream.new_field () ~name:"wallet channel"
+let field = Dream.new_field () ~name:"event channel"
 
 let get request : t =
   match Dream.field request field with
