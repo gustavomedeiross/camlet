@@ -68,11 +68,7 @@ let transactionRow = (transaction, ~wallet_id) => {
     | Withdrawal(_) => (txt("Dinheiro sacado"), None)
     };
 
-  let amount =
-    transaction.amount
-    |> Amount.to_string_pretty
-    |> Format.sprintf("R$ %s")
-    |> txt;
+  let amount = transaction.amount |> Amount.to_string_pretty |> txt;
 
   let name =
     switch (nameOpt) {
@@ -116,7 +112,11 @@ let navButton = (~btnText, ~icon, ~selected) =>
     </button>
   </li>;
 
-let home = (_request, ~transactions, ~wallet_id) => {
+let home = (_request, ~transactions, ~wallet_id, ~balance, ~income, ~expenses) => {
+  let balance = balance |> Amount.to_string_pretty |> Html.txt;
+  let income = income |> Amount.to_string_pretty;
+  let expenses = expenses |> Amount.to_string_pretty;
+
   <Page>
     <div className="h-screen grid grid-cols-5 gap-6 pt-6 bg-grey-15">
       <nav className="col-span-1 pb-6 pl-8">
@@ -153,8 +153,7 @@ let home = (_request, ~transactions, ~wallet_id) => {
         </header>
         <div className="col-span-4">
           <div className="text-[2rem] mb-1 text-grey-100"> "Saldo" </div>
-          // TODO update with dynamic value
-          <div className="text-5xl text-grey-100"> "$ 20.000,00" </div>
+          <div className="text-5xl text-grey-100"> balance </div>
         </div>
         {actionBox(
            ~action="Enviar dinheiro",
@@ -172,9 +171,8 @@ let home = (_request, ~transactions, ~wallet_id) => {
            ~action="Transações",
            ~icon=Icons.receipt(~width=32., ~height=32.),
          )}
-        // TODO update with dynamic value
-        {infoBox(~title="Recebidos", ~value="$ 20.000,00")}
-        {infoBox(~title="Gastos", ~value="$ 10.000,00")}
+        {infoBox(~title="Recebidos", ~value=income)}
+        {infoBox(~title="Gastos", ~value=expenses)}
         <h2 className="col-span-4 text-[2rem] text-grey-100">
           "Transações"
         </h2>

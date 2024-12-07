@@ -1,6 +1,7 @@
 module type DB = Caqti_lwt.CONNECTION
 
 module Transaction = Storage.Transaction
+module Wallet = Storage.Wallet
 module Relation = Storage.Relation
 module Transaction_kind = Storage.Transaction_kind
 
@@ -105,7 +106,14 @@ let home request =
     let%lwt transactions =
       Storage.Err.exn @@ Dream.sql request (Transaction.get_all ~wallet_id)
     in
-    View.to_dream_html @@ New_ui.home request ~transactions ~wallet_id
-  (* TODO: Render 404 page *)
+    let%lwt balance =
+      Storage.Err.exn @@ Dream.sql request (Wallet.get_balance ~wallet_id)
+    in
+    let%lwt income, expenses =
+      Storage.Err.exn @@ Dream.sql request (Wallet.get_income_and_expenses ~wallet_id)
+    in
+    View.to_dream_html
+    @@ New_ui.home request ~transactions ~wallet_id ~balance ~income ~expenses
+  (* TODO: Render 4xx page *)
   | None -> Dream.empty `Bad_Request
 ;;
