@@ -1,16 +1,5 @@
 module type DB = Rapper_helper.CONNECTION
 
-module Err = struct
-  type t = { db_err : Caqti_error.t }
-
-  let of_db_err db_err = { db_err }
-
-  let exn result =
-    Lwt_result.get_exn
-    @@ Lwt_result.map_error (fun err -> Caqti_error.Exn err.db_err) result
-  ;;
-end
-
 module Wallet = struct
   type t =
     { id : Uuid.t
@@ -35,6 +24,7 @@ module Wallet = struct
   ;;
 
   let get_balance ~wallet_id db_conn =
+    let open Lwt.Infix in
     let query =
       [%rapper
         get_one
@@ -44,10 +34,11 @@ module Wallet = struct
            WHERE id = %Uuid{wallet_id}
            |sql}]
     in
-    query ~wallet_id db_conn |> Lwt_result.map_error Err.of_db_err
+    query ~wallet_id db_conn >>= Caqti_lwt.or_fail
   ;;
 
   let get_income_and_expenses ~wallet_id db_conn =
+    let open Lwt.Infix in
     let query =
       [%rapper
         get_one
@@ -59,7 +50,7 @@ module Wallet = struct
            WHERE sender_wallet_id = %Uuid{wallet_id} OR recipient_wallet_id = %Uuid{wallet_id}
            |sql}]
     in
-    query ~wallet_id db_conn |> Lwt_result.map_error Err.of_db_err
+    query ~wallet_id db_conn >>= Caqti_lwt.or_fail
   ;;
 end
 
@@ -229,6 +220,7 @@ module Transaction = struct
   ;;
 
   let get_all ~wallet_id db_conn =
+    let open Lwt.Infix in
     let query =
       [%rapper
         get_many
@@ -241,11 +233,12 @@ module Transaction = struct
           function_out]
         of_rapper
     in
-    query ~wallet_id db_conn |> Lwt_result.map_error Err.of_db_err
+    query ~wallet_id db_conn >>= Caqti_lwt.or_fail
   ;;
 
   (* TODO: this is way more painful than it should be, see if there's a better alternative to Caqti *)
   let get_all_v2 ~wallet_id db_conn =
+    let open Lwt.Infix in
     let query =
       [%rapper
         get_many
@@ -266,11 +259,12 @@ module Transaction = struct
         (of_rapper, Wallet.opt_of_rapper, Wallet.opt_of_rapper)
     in
     query ~wallet_id db_conn
-    |> Lwt_result.map_error Err.of_db_err
     |> Lwt_result.map (List.map load_wallets)
+    >>= Caqti_lwt.or_fail
   ;;
 
   let get_by_id ~transaction_id db_conn =
+    let open Lwt.Infix in
     let query =
       [%rapper
         get_one
@@ -282,10 +276,11 @@ module Transaction = struct
           function_out]
         of_rapper
     in
-    query ~transaction_id db_conn |> Lwt_result.map_error Err.of_db_err
+    query ~transaction_id db_conn >>= Caqti_lwt.or_fail
   ;;
 
   let create transaction db_conn =
+    let open Lwt.Infix in
     let query =
       [%rapper
         execute
@@ -301,6 +296,6 @@ module Transaction = struct
            |sql}
           record_in]
     in
-    query (transaction |> to_record) db_conn |> Lwt_result.map_error Err.of_db_err
+    query (transaction |> to_record) db_conn >>= Caqti_lwt.or_fail
   ;;
 end

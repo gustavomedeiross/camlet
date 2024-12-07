@@ -13,9 +13,7 @@ let elt_to_dream_html html = html |> elt_to_string |> Dream.html
 let transactions request =
   match Dream.param request "wallet_id" |> Uuid.of_string with
   | Some wallet_id ->
-    let%lwt transactions =
-      Storage.Err.exn @@ Dream.sql request (Transaction.get_all ~wallet_id)
-    in
+    let%lwt transactions = Dream.sql request (Transaction.get_all ~wallet_id) in
     View.to_dream_html @@ View.home transactions request wallet_id
   | None -> Dream.empty `Bad_Request
 ;;
@@ -82,7 +80,7 @@ let pay request =
       ; timestamp = Datetime.now ()
       }
     in
-    let%lwt () = Storage.Err.exn @@ Dream.sql request @@ Transaction.create transaction in
+    let%lwt () = Dream.sql request @@ Transaction.create transaction in
     let _, tx = Wallet_channel.get request in
     let event = Wallet_channel.Transaction_created transaction in
     tx (Some event);
@@ -93,9 +91,7 @@ let pay request =
 let transaction_details request =
   match Dream.param request "transaction_id" |> Uuid.of_string with
   | Some transaction_id ->
-    let%lwt transaction =
-      Storage.Err.exn @@ Dream.sql request @@ Transaction.get_by_id ~transaction_id
-    in
+    let%lwt transaction = Dream.sql request @@ Transaction.get_by_id ~transaction_id in
     View.to_dream_html @@ View.transaction_detail transaction
   | None -> Dream.empty `Bad_Request
 ;;
@@ -124,17 +120,13 @@ let to_transaction_row (transaction : Transaction.t) wallet_id =
 let home request =
   match Dream.param request "wallet_id" |> Uuid.of_string with
   | Some wallet_id ->
-    let%lwt transactions =
-      Storage.Err.exn @@ Dream.sql request (Transaction.get_all_v2 ~wallet_id)
-    in
+    let%lwt transactions = Dream.sql request (Transaction.get_all_v2 ~wallet_id) in
     let transactions =
       List.map (fun tx -> to_transaction_row tx wallet_id) transactions
     in
-    let%lwt balance =
-      Storage.Err.exn @@ Dream.sql request (Wallet.get_balance ~wallet_id)
-    in
+    let%lwt balance = Dream.sql request (Wallet.get_balance ~wallet_id) in
     let%lwt income, expenses =
-      Storage.Err.exn @@ Dream.sql request (Wallet.get_income_and_expenses ~wallet_id)
+      Dream.sql request (Wallet.get_income_and_expenses ~wallet_id)
     in
     View.to_dream_html @@ New_ui.Home.render ~transactions ~balance ~income ~expenses
   (* TODO: Render 4xx page *)

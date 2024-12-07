@@ -1,5 +1,4 @@
 module Handler = Camlet.Handler
-module Storage = Camlet.Storage
 module Wallet_channel = Camlet.Wallet_channel
 
 let () =

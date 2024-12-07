@@ -34,7 +34,6 @@ module Home = {
     };
 
     let render = transaction => {
-      module Relation = Storage.Relation;
       open Tyxml.Html;
 
       let dateFormatted =
