@@ -1,0 +1,4 @@
+(executable
+ (public_name camlet)
+ (name main)
+ (libraries camlet dream dream-livereload caqti-driver-sqlite3))

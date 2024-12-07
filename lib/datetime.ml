@@ -29,3 +29,10 @@ let to_string_pretty t =
   let (h, m, s), _ = time in
   Format.sprintf "%02d:%02d:%02d %02d %s" h m s day (month_to_string mon)
 ;;
+
+let%test _ =
+  "2024-12-07T19:16:15.743Z"
+  |> Ptime.of_rfc3339
+  |> Result.get_ok
+  |> fun (dt, _, _) -> dt |> to_string_pretty |> String.equal "19:16:15 07 DEZ"
+;;

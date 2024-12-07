@@ -10,7 +10,6 @@ let divide n divisor =
   quotient, remainder
 ;;
 
-(* TODO: add test *)
 let to_string_pretty amount =
   let quotient, remainder = divide amount 100 in
   let quotient =
@@ -21,3 +20,13 @@ let to_string_pretty amount =
   in
   Format.sprintf "R$ %s,%02d" quotient remainder
 ;;
+
+let%test _ =
+  1000000 |> of_int |> Option.get |> to_string_pretty |> String.equal "R$ 10.000,00"
+;;
+
+let%test _ =
+  1234567 |> of_int |> Option.get |> to_string_pretty |> String.equal "R$ 12.345,67"
+;;
+
+let%test _ = 12345 |> of_int |> Option.get |> to_string_pretty |> String.equal "R$ 123,45"

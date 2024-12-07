@@ -1,5 +1,6 @@
-module Handler = Handler
-module Storage = Storage
+module Handler = Camlet.Handler
+module Storage = Camlet.Storage
+module Wallet_channel = Camlet.Wallet_channel
 
 let () =
   Dream.run ~port:42069

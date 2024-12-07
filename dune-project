@@ -30,6 +30,7 @@
    (>= "1.0.0~alpha5"))
   dream-livereload
   ppx_deriving
+  ppx_inline_test
   ppx_rapper
   ppx_rapper_lwt
   ptime
