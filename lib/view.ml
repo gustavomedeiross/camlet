@@ -1,8 +1,3 @@
-let html_to_string html = Format.asprintf "%a" (Tyxml.Html.pp ()) html
-let elt_to_string html = Format.asprintf "%a" (Tyxml.Html.pp_elt ()) html
-let to_dream_html html = html |> html_to_string |> Dream.html
-let elt_to_dream_html html = html |> elt_to_string |> Dream.html
-
 let html_template body_html =
   let open Tyxml.Html in
   let page_title = title (txt "Transactions") in

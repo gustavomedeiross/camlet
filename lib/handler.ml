@@ -2,16 +2,11 @@ module type DB = Caqti_lwt.CONNECTION
 
 module Relation = Transaction.Relation
 
-let html_to_string html = Format.asprintf "%a" (Tyxml.Html.pp ()) html
-let elt_to_string html = Format.asprintf "%a" (Tyxml.Html.pp_elt ()) html
-let to_dream_html html = html |> html_to_string |> Dream.html
-let elt_to_dream_html html = html |> elt_to_string |> Dream.html
-
 let transactions request =
   match Dream.param request "wallet_id" |> Uuid.of_string with
   | Some wallet_id ->
     let%lwt transactions = Dream.sql request (Transaction.get_all ~wallet_id) in
-    View.to_dream_html @@ View.home transactions request wallet_id
+    Html.render @@ View.home transactions request wallet_id
   | None -> Dream.empty `Bad_Request
 ;;
 
@@ -20,7 +15,7 @@ let transactions request =
 let server_sent_event s = Format.sprintf "data: %s\n\n" s
 
 let write_sse stream html =
-  let html = View.elt_to_string html in
+  let html = Html.elt_to_string html in
   let%lwt () = Dream.write stream (server_sent_event html) in
   Dream.flush stream
 ;;
@@ -81,7 +76,7 @@ let pay request =
     let _, tx = Event_channel.get request in
     let event = Event_channel.Transaction_created transaction in
     tx (Some event);
-    View.elt_to_dream_html @@ View.transaction_row transaction
+    Html.render_elt @@ View.transaction_row transaction
   | _ -> Dream.empty `Bad_Request
 ;;
 
@@ -89,7 +84,7 @@ let transaction_details request =
   match Dream.param request "transaction_id" |> Uuid.of_string with
   | Some transaction_id ->
     let%lwt transaction = Dream.sql request @@ Transaction.get_by_id ~transaction_id in
-    View.to_dream_html @@ View.transaction_detail transaction
+    Html.render @@ View.transaction_detail transaction
   | None -> Dream.empty `Bad_Request
 ;;
 
@@ -125,7 +120,7 @@ let home request =
     let%lwt income, expenses =
       Dream.sql request (Wallet.get_income_and_expenses ~wallet_id)
     in
-    View.to_dream_html @@ New_ui.Home.render ~transactions ~balance ~income ~expenses
+    Html.render @@ New_ui.Home.render ~transactions ~balance ~income ~expenses
   (* TODO: Render 4xx page *)
   | None -> Dream.empty `Bad_Request
 ;;
