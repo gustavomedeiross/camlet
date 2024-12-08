@@ -12,7 +12,7 @@ module Relation = struct
 
   let make k = Not_loaded k
 
-  let load t d =
+  let put_data t d =
     match t with
     | Loaded (k, _) -> Loaded (k, d)
     | Not_loaded k -> Loaded (k, d)
@@ -67,17 +67,21 @@ type record =
   }
 [@@deriving show]
 
-type transfer =
-  { sender_wallet : (Uuid.t, Wallet.t) Relation.t
-  ; recipient_wallet : (Uuid.t, Wallet.t) Relation.t
-  }
-[@@deriving show]
+module Transfer = struct
+  type t =
+    { sender_wallet : (Uuid.t, Wallet.t) Relation.t
+    ; recipient_wallet : (Uuid.t, Wallet.t) Relation.t
+    }
+  [@@deriving show]
+
+  let is_recipient ~wallet_id t = Relation.key t.recipient_wallet |> Uuid.equal wallet_id
+end
 
 type deposit = { recipient_wallet : (Uuid.t, Wallet.t) Relation.t } [@@deriving show]
 type withdrawal = { sender_wallet : (Uuid.t, Wallet.t) Relation.t } [@@deriving show]
 
 type kind =
-  | Transfer of transfer
+  | Transfer of Transfer.t
   | Deposit of deposit
   | Withdrawal of withdrawal
 [@@deriving show]
@@ -91,18 +95,18 @@ type t =
 [@@deriving show]
 
 (* TODO: introduce newtypes for sender and receiver, this is very error prone *)
-let load_wallets (tx, sw, rw) =
+let put_wallets (tx, sw, rw) =
   let kind =
     match tx.kind, sw, rw with
     | Transfer { sender_wallet; recipient_wallet }, Some sw, Some rw ->
       Transfer
-        { sender_wallet = sw |> Relation.load sender_wallet
-        ; recipient_wallet = rw |> Relation.load recipient_wallet
+        { sender_wallet = sw |> Relation.put_data sender_wallet
+        ; recipient_wallet = rw |> Relation.put_data recipient_wallet
         }
     | Deposit { recipient_wallet }, None, Some rw ->
-      Deposit { recipient_wallet = rw |> Relation.load recipient_wallet }
+      Deposit { recipient_wallet = rw |> Relation.put_data recipient_wallet }
     | Withdrawal { sender_wallet }, Some sw, None ->
-      Withdrawal { sender_wallet = sw |> Relation.load sender_wallet }
+      Withdrawal { sender_wallet = sw |> Relation.put_data sender_wallet }
     | tk, sw, rw ->
       raise
         (Invalid_argument
@@ -199,7 +203,7 @@ let get_all_v2 ~wallet_id db_conn =
         function_out]
       (of_rapper, Wallet.opt_of_rapper, Wallet.opt_of_rapper)
   in
-  query ~wallet_id db_conn |> Lwt_result.map (List.map load_wallets) >>= Caqti_lwt.or_fail
+  query ~wallet_id db_conn |> Lwt_result.map (List.map put_wallets) >>= Caqti_lwt.or_fail
 ;;
 
 let get_by_id ~transaction_id db_conn =
@@ -236,4 +240,25 @@ let create transaction db_conn =
         record_in]
   in
   query (transaction |> to_record) db_conn >>= Caqti_lwt.or_fail
+;;
+
+let load_wallets transaction db_conn =
+  let open Lwt.Infix in
+  let query =
+    [%rapper
+      get_one
+        {sql|
+           SELECT @Uuid?{sw.id}, @string?{sw.name}, @Amount?{sw.balance}, @Datetime?{sw.timestamp},
+                  @Uuid?{rw.id}, @string?{rw.name}, @Amount?{rw.balance}, @Datetime?{rw.timestamp}
+           FROM transactions AS txs
+           LEFT JOIN wallets AS sw ON sw.id = txs.sender_wallet_id
+           LEFT JOIN wallets AS rw ON rw.id = txs.recipient_wallet_id
+           WHERE txs.id = %Uuid{transaction_id}
+           |sql}
+        function_out]
+      (Wallet.opt_of_rapper, Wallet.opt_of_rapper)
+  in
+  query ~transaction_id:transaction.id db_conn
+  |> Lwt_result.map (fun (sw, rw) -> put_wallets (transaction, sw, rw))
+  >>= Caqti_lwt.or_fail
 ;;

@@ -132,7 +132,19 @@ module Home = {
       </button>
     </li>;
 
-  let render = (~transactions, ~balance, ~income, ~expenses) => {
+  let transactionsLive = (~wallet_id) => {
+    let sseConnect =
+      Format.asprintf("%a/transactions/stream", Uuid.pp, wallet_id);
+    <div
+      _hx_ext="sse"
+      _sse_connect=sseConnect
+      _sse_swap="message"
+      _hx_target="#transactions"
+      _hx_swap="afterbegin"
+    />;
+  };
+
+  let render = (~wallet_id, ~transactions, ~balance, ~income, ~expenses) => {
     let balance = balance |> Amount.to_string_pretty |> Html.txt;
     let income = income |> Amount.to_string_pretty;
     let expenses = expenses |> Amount.to_string_pretty;
@@ -196,7 +208,9 @@ module Home = {
           <h2 className="col-span-4 text-[2rem] text-grey-100">
             "Transações"
           </h2>
+          {transactionsLive(~wallet_id)}
           <div
+            id="transactions"
             className="col-span-4 bg-grey-10 p-6 grid grid-cols-1 rounded-3xl divide-y divide-grey-25">
             ...{List.map(TransactionRow.render, transactions)}
           </div>

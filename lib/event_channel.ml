@@ -1,4 +1,5 @@
-type event = Transaction_created of Transaction.t
+(* TODO: should be Transfer.t *)
+type event = Transfer_received of Transaction.t
 type t = event Lwt_stream.t * (event option -> unit)
 
 exception Middleware_not_set
